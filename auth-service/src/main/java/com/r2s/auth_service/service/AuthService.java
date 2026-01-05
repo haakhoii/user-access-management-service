@@ -8,6 +8,7 @@ import com.r2s.core_service.dto.request.LoginRequest;
 import com.r2s.core_service.dto.request.UserCreationRequest;
 import com.r2s.core_service.dto.response.AuthResponse;
 import com.r2s.core_service.dto.response.UserResponse;
+import com.r2s.core_service.enums.Role;
 import com.r2s.core_service.exception.AppException;
 import com.r2s.core_service.exception.ErrorCode;
 import lombok.AccessLevel;
@@ -32,6 +33,7 @@ public class AuthService {
         }
         User user = UserMapper.toUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(Role.USER);
         user = userRepository.save(user);
 
         return UserMapper.toUserResponse(user);

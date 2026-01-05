@@ -1,5 +1,6 @@
 package com.r2s.auth_service.entity;
 
+import com.r2s.core_service.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -24,5 +25,6 @@ public class User implements Serializable {
     @Column(nullable = false)
     String password;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

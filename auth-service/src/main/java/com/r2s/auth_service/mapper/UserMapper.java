@@ -8,7 +8,6 @@ public class UserMapper {
     public static User toUser(UserCreationRequest request) {
         return User.builder()
                 .username(request.getUsername())
-                .role("USER")
                 .build();
     }
 
@@ -16,7 +15,7 @@ public class UserMapper {
         return UserResponse.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
-                .role(user.getRole())
+                .role(user.getRole().name())
                 .build();
     }
 }

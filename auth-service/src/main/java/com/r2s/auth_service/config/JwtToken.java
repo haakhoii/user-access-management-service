@@ -23,7 +23,6 @@ public class JwtToken {
     @Value("${jwt.expiry}")
     private long EXPIRY;
 
-
     public String generateToken(User user) {
         try {
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
@@ -35,7 +34,7 @@ public class JwtToken {
                     .expirationTime(Date.from(Instant.now().plus(EXPIRY, ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
                     .claim("username", user.getUsername())
-                    .claim("scope", "ROLE_" + user.getRole())
+                    .claim("scope", "ROLE_" + user.getRole().name())
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());
