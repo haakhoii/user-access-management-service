@@ -20,7 +20,7 @@ import java.time.Instant;
 
 @Service
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthService {
     UserRepository userRepository;
     PasswordEncoder passwordEncoder;

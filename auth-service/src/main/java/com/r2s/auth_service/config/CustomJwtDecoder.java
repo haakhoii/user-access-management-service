@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.Base64;
 
 @Component
 @RequiredArgsConstructor

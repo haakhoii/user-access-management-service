@@ -38,6 +38,7 @@ public class SecurityConfig {
             "/login"
     };
 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);

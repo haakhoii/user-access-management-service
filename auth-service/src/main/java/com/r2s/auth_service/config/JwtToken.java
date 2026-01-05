@@ -4,16 +4,13 @@ import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.*;
 import com.r2s.auth_service.entity.User;
-import jdk.internal.icu.lang.UCharacterDirection;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.StringJoiner;
 import java.util.UUID;
 
 @Component
@@ -29,7 +26,7 @@ public class JwtToken {
 
     public String generateToken(User user) {
         try {
-            JWSHeader header = new JWSHeader(JWSAlgorithm.ES512);
+            JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getId())

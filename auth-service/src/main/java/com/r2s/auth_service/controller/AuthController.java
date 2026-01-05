@@ -17,10 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {
     AuthService authService;
-    JwtToken jwtToken;
 
     @PostMapping("/register")
     ApiResponse<UserResponse> register(@RequestBody UserCreationRequest request) {
