@@ -1,0 +1,40 @@
+#version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres-user
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Abc123
+      POSTGRES_DB: auth_db
+    ports:
+      - "5432:5432"
+
+  auth-service:
+    build:
+      context: ./auth-service
+    container_name: auth-service
+    ports:
+      - "7001:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Abc123
+      SPRING_PROFILES_ACTIVE: docker
+
+  user-service:
+    build:
+      context: ./user-service
+    container_name: user-management-service
+    ports:
+      - "7002:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Abc123
+      SPRING_PROFILES_ACTIVE: docker
