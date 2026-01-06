@@ -12,6 +12,7 @@ public enum ErrorCode {
 
     USER_NOT_FOUND(2001, "User not found", HttpStatus.NOT_FOUND),
     USER_EXISTS(2002, "User exists", HttpStatus.BAD_REQUEST),
+
     PASSWORD_INVALID(2003, "Password is invalid", HttpStatus.BAD_REQUEST),
     ;
 
