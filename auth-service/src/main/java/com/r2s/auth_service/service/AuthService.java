@@ -1,13 +1,13 @@
 package com.r2s.auth_service.service;
 
 import com.r2s.auth_service.config.JwtToken;
-import com.r2s.auth_service.entity.User;
-import com.r2s.auth_service.mapper.UserMapper;
-import com.r2s.auth_service.repository.UserRepository;
+import com.r2s.auth_service.entity.Auth;
+import com.r2s.auth_service.mapper.AuthMapper;
+import com.r2s.auth_service.repository.AuthRepository;
 import com.r2s.core_service.dto.request.LoginRequest;
-import com.r2s.core_service.dto.request.UserCreationRequest;
-import com.r2s.core_service.dto.response.AuthResponse;
-import com.r2s.core_service.dto.response.UserResponse;
+import com.r2s.core_service.dto.request.RegisterRequest;
+import com.r2s.core_service.dto.response.TokenResponse;
+import com.r2s.core_service.dto.response.AccountResponse;
 import com.r2s.core_service.enums.Role;
 import com.r2s.core_service.exception.AppException;
 import com.r2s.core_service.exception.ErrorCode;
@@ -23,32 +23,32 @@ import java.time.Instant;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthService {
-    UserRepository userRepository;
+    AuthRepository authRepository;
     PasswordEncoder passwordEncoder;
     JwtToken jwtToken;
 
-    public UserResponse register(UserCreationRequest request) {
+    public AccountResponse register(RegisterRequest request) {
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
-        User user = UserMapper.toUser(request);
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.USER);
-        user = userRepository.save(user);
+        Auth auth = AuthMapper.toAuth(request);
+        auth.setPassword(passwordEncoder.encode(request.getPassword()));
+        auth.setRole(Role.USER);
+        auth = authRepository.save(auth);
 
-        return UserMapper.toUserResponse(user);
+        return AuthMapper.toAccountResponse(auth);
     }
 
-    public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
+    public TokenResponse login(LoginRequest request) {
+        Auth auth = authRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
+        if (!passwordEncoder.matches(request.getPassword(), auth.getPassword()))
             throw new AppException(ErrorCode.PASSWORD_INVALID);
 
-        String token = jwtToken.generateToken(user);
+        String token = jwtToken.generateToken(auth);
         Instant expiry = jwtToken.generateExpiry();
 
-        return AuthResponse.builder()
+        return TokenResponse.builder()
                 .token(token)
                 .expiry(expiry)
                 .build();

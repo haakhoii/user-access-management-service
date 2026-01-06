@@ -11,7 +11,8 @@ public enum ErrorCode {
     UNAUTHORIZED(1001, "You do not have permission", HttpStatus.UNAUTHORIZED),
 
     USER_NOT_FOUND(2001, "User not found", HttpStatus.NOT_FOUND),
-    PASSWORD_INVALID(2003, "Password is invalid", HttpStatus.BAD_REQUEST)
+    USER_EXISTS(2002, "User exists", HttpStatus.BAD_REQUEST),
+    PASSWORD_INVALID(2003, "Password is invalid", HttpStatus.BAD_REQUEST),
     ;
 
     private final int code;

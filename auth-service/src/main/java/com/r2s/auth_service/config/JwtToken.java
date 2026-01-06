@@ -3,7 +3,7 @@ package com.r2s.auth_service.config;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.*;
-import com.r2s.auth_service.entity.User;
+import com.r2s.auth_service.entity.Auth;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,18 +23,18 @@ public class JwtToken {
     @Value("${jwt.expiry}")
     private long EXPIRY;
 
-    public String generateToken(User user) {
+    public String generateToken(Auth auth) {
         try {
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .subject(user.getId())
+                    .subject(auth.getId())
                     .issuer("r2s")
                     .issueTime(Date.from(Instant.now()))
                     .expirationTime(Date.from(Instant.now().plus(EXPIRY, ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
-                    .claim("username", user.getUsername())
-                    .claim("scope", "ROLE_" + user.getRole().name())
+                    .claim("username", auth.getUsername())
+                    .claim("scope", "ROLE_" + auth.getRole().name())
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());

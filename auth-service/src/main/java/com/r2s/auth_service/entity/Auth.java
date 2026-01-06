@@ -14,7 +14,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class User implements Serializable {
+public class Auth implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;

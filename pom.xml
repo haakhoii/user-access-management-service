@@ -13,8 +13,8 @@
 
     <modules>
         <module>core-service</module>
-        <module>user-service</module>
         <module>auth-service</module>
+        <module>user-service</module>
     </modules>
 
     <properties>

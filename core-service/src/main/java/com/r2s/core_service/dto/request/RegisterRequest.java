@@ -1,17 +1,15 @@
-package com.r2s.core_service.dto.response;
+package com.r2s.core_service.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.time.Instant;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AuthResponse {
-    String token;
-
-    Instant expiry;
+public class RegisterRequest {
+    String username;
+    String password;
+    String confirmPassword;
 }
