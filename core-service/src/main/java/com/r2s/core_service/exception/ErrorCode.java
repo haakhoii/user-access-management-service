@@ -9,6 +9,7 @@ public enum ErrorCode {
 
     UNCATEGORIZED_EXCEPTION(9999, "Uncategorized error", HttpStatus.INTERNAL_SERVER_ERROR),
     UNAUTHORIZED(1001, "You do not have permission", HttpStatus.UNAUTHORIZED),
+    INVALID_REQUEST(1003, "Invalid request", HttpStatus.BAD_REQUEST),
 
     USER_NOT_FOUND(2001, "User not found", HttpStatus.NOT_FOUND),
     USER_EXISTS(2002, "User exists", HttpStatus.BAD_REQUEST),

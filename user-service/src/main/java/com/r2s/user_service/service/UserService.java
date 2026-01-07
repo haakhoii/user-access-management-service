@@ -26,8 +26,22 @@ import java.util.List;
 public class UserService {
     UserRepository userRepository;
 
+    private String getAuthUserId() {
+        if (SecurityContextHolder.getContext() == null ||
+                SecurityContextHolder.getContext().getAuthentication() == null ||
+                SecurityContextHolder.getContext().getAuthentication().getName() == null) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+        return SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getName();
+    }
+
     public UserResponse create(UserCreationRequest request) {
-        String authUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        if (request == null) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+        String authUserId = getAuthUserId();
         User user = User.builder()
                 .authUserId(authUserId)
                 .fullName(request.getFullName())
@@ -39,6 +53,10 @@ public class UserService {
     }
 
     public PageResponse<UserResponse> getList(int page, int size) {
+        if (page <= 0 || size <= 0) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<User> userPage = userRepository.findAll(pageable);
 
@@ -56,14 +74,14 @@ public class UserService {
     }
 
     public UserResponse getMe() {
-        String authUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String authUserId = getAuthUserId();
         User user = userRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return UserMapper.toUserResponse(user);
     }
 
     public UserResponse update(UserUpdatedRequest request) {
-        String authUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String authUserId = getAuthUserId();
         User user = userRepository.findByAuthUserId(authUserId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
@@ -75,6 +93,10 @@ public class UserService {
     }
 
     public String delete(String userId) {
+        if (userId == null || userId.isBlank()) {
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userRepository.delete(user);

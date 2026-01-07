@@ -28,6 +28,9 @@ public class AuthService {
     JwtToken jwtToken;
 
     public AccountResponse register(RegisterRequest request) {
+        if (authRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new AppException(ErrorCode.USER_EXISTS);
+        }
         if (!request.getPassword().equals(request.getConfirmPassword())) {
             throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
