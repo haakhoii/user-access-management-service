@@ -4,17 +4,20 @@ name: "user_access_management_system"
 services:
   postgres:
     image: postgres:16
-    container_name: postgres-user
+    container_name: postgres-user-access-management
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Abc123
     ports:
       - "5432:5432"
+    volumes:
+      - ./init-db:/docker-entrypoint-initdb.d
 
   auth-service:
     build:
       context: ./auth-service
-    container_name: auth-service
+      dockerfile: Dockerfile
+    container_name: auth-management-service
     ports:
       - "7001:8080"
     depends_on:
@@ -27,6 +30,7 @@ services:
   user-service:
     build:
       context: ./user-service
+      dockerfile: Dockerfile
     container_name: user-management-service
     ports:
       - "7002:8080"
