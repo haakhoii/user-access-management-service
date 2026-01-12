@@ -2,10 +2,12 @@ package com.r2s.auth.controller;
 
 import com.r2s.auth.service.AuthService;
 import com.r2s.core.dto.ApiResponse;
+import com.r2s.core.dto.request.IntrospectRequest;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.request.UpdateUserRequest;
 import com.r2s.core.dto.response.AuthResponse;
+import com.r2s.core.dto.response.IntrospectResponse;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 import lombok.AccessLevel;
@@ -64,6 +66,13 @@ public class AuthController {
     ApiResponse<UserResponse> getMe() {
         return ApiResponse.<UserResponse>builder()
                 .result(authService.getMe())
+                .build();
+    }
+
+    @PostMapping("/introspect")
+    ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+        return ApiResponse.<IntrospectResponse>builder()
+                .result(authService.introspect(request))
                 .build();
     }
 }

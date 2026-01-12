@@ -18,5 +18,5 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
 
 jwt:
-  signerKey: test-test-test-test-test-test-test-test-test==
+  signerKey: qxDRHYT3pRMIJkG7pFsaUkbSkFr3+X3hi3n1ci64B7mAS7RH+Ws4V0ao/nHyyBgGWZY2FpEKCgTXNUpf79t2Tw==
   expiry: 15

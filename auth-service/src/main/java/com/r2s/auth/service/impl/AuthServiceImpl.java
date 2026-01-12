@@ -3,10 +3,12 @@ package com.r2s.auth.service.impl;
 import com.r2s.auth.repository.AuthRepository;
 import com.r2s.auth.service.AuthService;
 import com.r2s.auth.token.JwtToken;
+import com.r2s.core.dto.request.IntrospectRequest;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.request.UpdateUserRequest;
 import com.r2s.core.dto.response.AuthResponse;
+import com.r2s.core.dto.response.IntrospectResponse;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 import com.r2s.core.entity.User;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -117,5 +120,18 @@ public class AuthServiceImpl implements AuthService {
         User user = authRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         return UserMapper.toUserResponse(user);
+    }
+
+    @Override
+    public IntrospectResponse introspect(IntrospectRequest request) {
+        Jwt jwt = jwtToken.verify(request.getToken());
+
+        return IntrospectResponse.builder()
+                .valid(true)
+                .sub(jwt.getSubject())
+                .username(jwt.getClaim("username"))
+                .exp(jwt.getExpiresAt())
+                .scope(jwt.getClaim("scope"))
+                .build();
     }
 }
