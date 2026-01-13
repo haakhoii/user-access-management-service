@@ -1,6 +1,5 @@
 package com.r2s.user.controller;
 
-import com.r2s.user.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
