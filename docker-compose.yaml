@@ -1,42 +1,49 @@
 version: "3.8"
-name: "user_access_management_system"
+name: "user-system"
 
 services:
   postgres:
-    image: postgres:16
-    container_name: postgres-user-access-management
+    image: postgres:15
+    container_name: postgres-user-system
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Abc123
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - ./init-db:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
 
   auth-service:
     build:
       context: ./auth-service
-      dockerfile: Dockerfile
-    container_name: auth-management-service
+    container_name: auth-service-user-system
     ports:
-      - "7001:8080"
+      - "8081:8081"
     depends_on:
       - postgres
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_service_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: Abc123
+    restart: unless-stopped
 
   user-service:
     build:
       context: ./user-service
-      dockerfile: Dockerfile
-    container_name: user-management-service
+    container_name: user-service-user-system
     ports:
-      - "7002:8080"
+      - "8082:8082"
     depends_on:
       - postgres
     environment:
+      SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service_db
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: Abc123
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
