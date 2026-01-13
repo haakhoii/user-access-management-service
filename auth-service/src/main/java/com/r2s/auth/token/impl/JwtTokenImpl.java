@@ -5,7 +5,7 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.response.AuthResponse;
-import com.r2s.core.entity.User;
+import com.r2s.auth.entity.Auth;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -32,17 +32,17 @@ public class JwtTokenImpl implements JwtToken {
     private long EXPIRY;
 
     @Override
-    public AuthResponse generateToken(User user) {
+    public AuthResponse generateToken(Auth auth) {
         try {
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .subject(user.getId())
+                    .subject(auth.getId())
                     .issuer("r2s")
                     .issueTime(Date.from(Instant.now()))
                     .expirationTime(Date.from(Instant.now().plus(EXPIRY, ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
-                    .claim("username", user.getUsername())
-                    .claim("scope", "ROLE_" + user.getRole().name())
+                    .claim("username", auth.getUsername())
+                    .claim("scope", "ROLE_" + auth.getRole().name())
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());
@@ -56,7 +56,6 @@ public class JwtTokenImpl implements JwtToken {
         } catch (JOSEException e) {
             throw new AppException(ErrorCode.TOKEN_GENERATION_FAILED);
         }
-
     }
 
     @Override

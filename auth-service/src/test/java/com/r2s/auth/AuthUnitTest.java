@@ -1,13 +1,12 @@
 package com.r2s.auth;
 
+import com.r2s.auth.entity.Auth;
 import com.r2s.auth.repository.AuthRepository;
 import com.r2s.auth.service.impl.AuthServiceImpl;
 import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
-import com.r2s.core.dto.response.UserResponse;
-import com.r2s.core.entity.User;
 import com.r2s.core.enums.Role;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
@@ -47,7 +46,7 @@ class AuthUnitTest {
                 .build();
 
         when(authRepository.findByUsername("username"))
-                .thenReturn(Optional.of(User.builder().build()));
+                .thenReturn(Optional.of(Auth.builder().build()));
 
         AppException ex = assertThrows(
                 AppException.class,
@@ -64,8 +63,6 @@ class AuthUnitTest {
         RegisterRequest request = RegisterRequest.builder()
                 .username("username")
                 .password("123")
-                .fullName("Test User")
-                .email("test@email.com")
                 .build();
 
         when(authRepository.findByUsername("username"))
@@ -74,16 +71,14 @@ class AuthUnitTest {
         when(passwordEncoder.encode("123"))
                 .thenReturn("encoded");
 
-        when(authRepository.save(any(User.class)))
+        when(authRepository.save(any(Auth.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserResponse response = authService.register(request);
+        String response = authService.register(request);
 
         assertNotNull(response);
-        assertEquals("username", response.getUsername());
-        assertEquals(Role.USER.name(), response.getRole());
 
-        verify(authRepository).save(any(User.class));
+        verify(authRepository).save(any(Auth.class));
         verify(passwordEncoder).encode("123");
     }
 
@@ -113,7 +108,7 @@ class AuthUnitTest {
                 .password("123")
                 .build();
 
-        User user = User.builder()
+        Auth user = Auth.builder()
                 .id("1")
                 .username("username")
                 .password("encoded")
@@ -142,7 +137,7 @@ class AuthUnitTest {
                 .password("123")
                 .build();
 
-        User user = User.builder()
+        Auth user = Auth.builder()
                 .id("1")
                 .username("username")
                 .password("encoded")

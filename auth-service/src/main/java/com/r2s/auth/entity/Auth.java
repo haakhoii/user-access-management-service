@@ -1,4 +1,4 @@
-package com.r2s.core.entity;
+package com.r2s.auth.entity;
 
 import com.r2s.core.enums.Role;
 import jakarta.persistence.*;
@@ -10,12 +10,12 @@ import lombok.NoArgsConstructor;
 import java.io.Serializable;
 
 @Data
-@Table(name = "tbl_user")
+@Table(name = "tbl_auth")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class User implements Serializable {
+public class Auth implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
@@ -23,10 +23,6 @@ public class User implements Serializable {
     String username;
 
     String password;
-
-    String fullName;
-
-    String email;
 
     @Enumerated(EnumType.STRING)
     Role role;
