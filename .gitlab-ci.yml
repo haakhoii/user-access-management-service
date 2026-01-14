@@ -59,7 +59,7 @@ test-job:
       done
 
   script:
-    - ./mvnw install -pl core -DskipTests
+    - /mvnw install -pl core-service -DskipTests
 
     - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$AUTH_DB
     - ./mvnw test -pl auth-service
