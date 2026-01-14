@@ -1,4 +1,3 @@
-
 image: maven:3.9.6-eclipse-temurin-21
 
 stages:
@@ -6,79 +5,83 @@ stages:
   - test
   - deploy
 
-services:
-  - name: postgres:15
-    alias: postgres
-
 variables:
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: Abc123
-
   AUTH_DB: auth_service
   USER_DB: user_service
 
-  SPRING_PROFILES_ACTIVE: dev
+  SPRING_PROFILES_ACTIVE: ci
+  SPRING_DATASOURCE_USERNAME: postgres
+  SPRING_DATASOURCE_PASSWORD: Abc123
+
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
 
 cache:
   key: maven-cache
   paths:
     - .m2/repository
 
-build:
+# BUILD
+build-job:
   stage: build
-  tags:
-    - local
+  tags: [local]
   script:
     - chmod +x mvnw
     - ./mvnw clean install -DskipTests
   artifacts:
+    expire_in: 1 hour
     paths:
+      - core/target/*.jar
       - auth-service/target/*.jar
       - user-service/target/*.jar
-    expire_in: 1 hour
 
-test:
+# TEST
+test-job:
   stage: test
-  tags:
-    - local
+  tags: [local]
+  services:
+    - name: postgres:15
+      alias: postgres-db
   before_script:
-    - apt-get update && apt-get install -y postgresql-client
-
-    - |
-      until pg_isready -h postgres -p 5432 -U $POSTGRES_USER; do
-        echo "Waiting for postgres..."
-        sleep 2
-      done
+    - apt-get update && apt-get install -y postgresql-client curl
+    - curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh
+    - chmod +x wait-for-it.sh
+    - ./wait-for-it.sh postgres-db:5432 -t 60 -- echo "Postgres ready"
 
     - export PGPASSWORD=$POSTGRES_PASSWORD
     - |
       for DB in "$AUTH_DB" "$USER_DB"; do
-        psql -h postgres -U $POSTGRES_USER -tc \
-        "SELECT 1 FROM pg_database WHERE datname='$DB'" | grep -q 1 || \
-        psql -h postgres -U $POSTGRES_USER -c "CREATE DATABASE $DB";
+        psql -h postgres-db -U $POSTGRES_USER -tc \
+          "SELECT 1 FROM pg_database WHERE datname='$DB'" | grep -q 1 || \
+        psql -h postgres-db -U $POSTGRES_USER -c "CREATE DATABASE $DB;"
       done
 
   script:
-    - ./mvnw clean test -pl auth-service
-    - ./mvnw clean test -pl user-service
+    - ./mvnw install -pl core -DskipTests
 
-deploy:
+    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$AUTH_DB
+    - ./mvnw test -pl auth-service
+
+    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$USER_DB
+    - ./mvnw test -pl user-service
+
+# DEPLOY
+deploy-job:
   stage: deploy
-  image: docker:26
+  image: docker:latest
   services:
     - name: docker:dind
-      alias: docker
-  tags:
-    - local
+  tags: [local]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
-  only:
-    - main
+  only: [main]
   script:
-    - cp auth-service/target/*.jar auth-service/app.jar
-    - cp user-service/target/*.jar user-service/app.jar
-
-    - docker compose down
-    - docker compose build
-    - docker compose up -d
+    - docker rm -f auth-service || true
+    - |
+      docker run -d --name auth-service \
+        -p 8081:8081 \
+        -v $CI_PROJECT_DIR/auth-service/target/*.jar:/app.jar \
+        mcr.microsoft.com/openjdk/jdk:17-ubuntu \
+        java -jar /app.jar
