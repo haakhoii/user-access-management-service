@@ -59,13 +59,13 @@ test-job:
       done
 
   script:
-    - ./mvnw install -pl core-service -DskipTests
+    - mvn install -pl auth-service -am -DskipTests
 
     - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$AUTH_DB
-    - ./mvnw test -pl auth-service
+    - mvn test -pl auth-service
 
     - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$USER_DB
-    - ./mvnw test -pl user-service
+    - mvn test -pl user-service
 
 # DEPLOY
 deploy-job:
