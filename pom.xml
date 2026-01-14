@@ -22,6 +22,7 @@
         <spring.boot.version>3.4.7</spring.boot.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <lombok.version>1.18.30</lombok.version>
     </properties>
 
     <profiles>
