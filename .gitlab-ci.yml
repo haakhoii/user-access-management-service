@@ -44,6 +44,7 @@ test-job:
     - name: postgres:15
       alias: postgres-db
   before_script:
+    - chmod +x mvnw
     - apt-get update && apt-get install -y postgresql-client curl
     - curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh
     - chmod +x wait-for-it.sh
