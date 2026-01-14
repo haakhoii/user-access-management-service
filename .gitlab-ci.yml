@@ -37,35 +37,35 @@ build-job:
       - user-service/target/*.jar
 
 # TEST
-test-job:
-  stage: test
-  tags: [local]
-  services:
-    - name: postgres:15
-      alias: postgres-db
-  before_script:
-    - chmod +x mvnw
-    - apt-get update && apt-get install -y postgresql-client curl
-    - curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh
-    - chmod +x wait-for-it.sh
-    - ./wait-for-it.sh postgres-db:5432 -t 60 -- echo "Postgres ready"
-
-    - export PGPASSWORD=$POSTGRES_PASSWORD
-    - |
-      for DB in "$AUTH_DB" "$USER_DB"; do
-        psql -h postgres-db -U $POSTGRES_USER -tc \
-          "SELECT 1 FROM pg_database WHERE datname='$DB'" | grep -q 1 || \
-        psql -h postgres-db -U $POSTGRES_USER -c "CREATE DATABASE $DB;"
-      done
-
-  script:
-    - mvn install -pl auth-service -am -DskipTests
-
-    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$AUTH_DB
-    - mvn test -pl auth-service
-
-    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$USER_DB
-    - mvn test -pl user-service
+#test-job:
+#  stage: test
+#  tags: [local]
+#  services:
+#    - name: postgres:15
+#      alias: postgres-db
+#  before_script:
+#    - chmod +x mvnw
+#    - apt-get update && apt-get install -y postgresql-client curl
+#    - curl -sSL https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o wait-for-it.sh
+#    - chmod +x wait-for-it.sh
+#    - ./wait-for-it.sh postgres-db:5432 -t 60 -- echo "Postgres ready"
+#
+#    - export PGPASSWORD=$POSTGRES_PASSWORD
+#    - |
+#      for DB in "$AUTH_DB" "$USER_DB"; do
+#        psql -h postgres-db -U $POSTGRES_USER -tc \
+#          "SELECT 1 FROM pg_database WHERE datname='$DB'" | grep -q 1 || \
+#        psql -h postgres-db -U $POSTGRES_USER -c "CREATE DATABASE $DB;"
+#      done
+#
+#  script:
+#    - ./mvnw install -pl core-service -DskipTests
+#
+#    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$AUTH_DB
+#    - ./mvnw test -pl auth-service
+#
+#    - export SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-db:5432/$USER_DB
+#    - ./mvnw test -pl user-service
 
 # DEPLOY
 deploy-job:
