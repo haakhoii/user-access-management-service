@@ -32,7 +32,7 @@ build-job:
   artifacts:
     expire_in: 1 hour
     paths:
-      - core/target/*.jar
+      - core-service/target/*.jar
       - auth-service/target/*.jar
       - user-service/target/*.jar
 
