@@ -59,24 +59,27 @@ test-job:
     - export SPRING_PROFILES_ACTIVE=test
     - ./mvnw test -pl user-service
 
-
-
-# DEPLOY
 deploy-job:
   stage: deploy
   image: docker:latest
   services:
-    - name: docker:dind
+    - docker:dind
   tags: [local]
   variables:
     DOCKER_HOST: tcp://docker:2375
     DOCKER_TLS_CERTDIR: ""
-  only: [main]
+  only:
+    - main
+
   script:
+    # Build images
+    - docker build -t auth-service ./auth-service
+    - docker build -t user-service ./user-service
+
+    # Stop old containers
     - docker rm -f auth-service || true
-    - |
-      docker run -d --name auth-service \
-        -p 8081:8081 \
-        -v $CI_PROJECT_DIR/auth-service/target/*.jar:/app.jar \
-        mcr.microsoft.com/openjdk/jdk:17-ubuntu \
-        java -jar /app.jar
+    - docker rm -f user-service || true
+
+    # Run containers
+    - docker run -d --name auth-service -p 8081:8081 auth-service
+    - docker run -d --name user-service -p 8082:8082 user-service
