@@ -48,14 +48,9 @@ test-job:
     - chmod +x mvnw
 
   script:
-    # 1. Install core vào local repo
-    - ./mvnw install -pl core-service -am -DskipTests
-
-    # 2. Test auth
     - export SPRING_PROFILES_ACTIVE=test
     - ./mvnw test -pl auth-service
 
-    # 3. Test user
     - export SPRING_PROFILES_ACTIVE=test
     - ./mvnw test -pl user-service
 
