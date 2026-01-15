@@ -55,27 +55,39 @@ test-job:
 
     - export SPRING_PROFILES_ACTIVE=test
     - ./mvnw test -pl user-service
+
 deploy-job:
   stage: deploy
-  image: docker:latest
-  services:
-    - docker:dind
   tags: [local]
-  variables:
-    DOCKER_HOST: tcp://docker:2375
-    DOCKER_TLS_CERTDIR: ""
   only:
     - main
-
   script:
-    # Build images
-    - docker build -t auth-service ./auth-service
-    - docker build -t user-service ./user-service
+    - echo "Deploy skipped on Windows local runner"
+    - echo "Use docker-compose up locally for deployment"
 
-    # Stop old containers
-    - docker rm -f auth-service || true
-    - docker rm -f user-service || true
+#deploy-job:
+#  stage: deploy
+#  image: docker:latest
+#  services:
+#    - docker:dind
+#  tags: [local]
+#  variables:
+#    DOCKER_HOST: tcp://docker:2375
+#    DOCKER_TLS_CERTDIR: ""
+#  only:
+#    - main
+#
+#  script:
+#    # Build images
+#    - docker build -t auth-service ./auth-service
+#    - docker build -t user-service ./user-service
+#
+#    # Stop old containers
+#    - docker rm -f auth-service || true
+#    - docker rm -f user-service || true
+#
+#    # Run containers
+#    - docker run -d --name auth-service -p 8081:8081 auth-service
+#    - docker run -d --name user-service -p 8082:8082 user-service
 
-    # Run containers
-    - docker run -d --name auth-service -p 8081:8081 auth-service
-    - docker run -d --name user-service -p 8082:8082 user-service
+
