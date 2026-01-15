@@ -55,8 +55,7 @@ test-job:
 
     - export SPRING_PROFILES_ACTIVE=test
     - ./mvnw test -pl user-service
-
-
+    -
 deploy-job:
   stage: deploy
   image: docker:latest
