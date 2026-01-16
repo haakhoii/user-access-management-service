@@ -3,20 +3,13 @@ spring:
     activate:
       on-profile: test
 
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:mem:auth_test_db;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
-
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
-jwt:
-  signerKey: qxDRHYT3pRMIJkG7pFsaUkbSkFr3+X3hi3n1ci64B7mAS7RH+Ws4V0ao/nHyyBgGWZY2FpEKCgTXNUpf79t2Tw==
-  expiry: 15
+  flyway:
+    enabled: true
