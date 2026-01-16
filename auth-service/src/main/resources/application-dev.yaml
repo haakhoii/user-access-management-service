@@ -25,3 +25,12 @@ spring:
     enable: true
     locations:
       classpath: db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always

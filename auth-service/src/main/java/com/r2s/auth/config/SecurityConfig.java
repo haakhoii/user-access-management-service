@@ -25,7 +25,8 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/register",
             "/login",
-            "/introspect"
+            "/introspect",
+            "/actuator/health"
     };
 
     @Bean

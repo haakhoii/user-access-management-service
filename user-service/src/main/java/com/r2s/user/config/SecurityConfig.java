@@ -23,6 +23,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
     private static final String[] PUBLIC_ENDPOINTS = {
+            "/actuator/health"
     };
 
     @Bean

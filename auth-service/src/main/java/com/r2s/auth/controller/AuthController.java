@@ -10,16 +10,19 @@ import com.r2s.core.dto.response.IntrospectResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@Slf4j
 public class AuthController {
     AuthService authService;
 
     @PostMapping("/register")
     ApiResponse<String> register(@RequestBody RegisterRequest request) {
+        log.info("Register with request: {}", request);
         return ApiResponse.<String>builder()
                 .result(authService.register(request))
                 .build();
