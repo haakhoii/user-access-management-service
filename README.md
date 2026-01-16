@@ -1,1 +1,1 @@
-# userProfiles-access-management-service
+# user-access-management-service
