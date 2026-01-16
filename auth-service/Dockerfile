@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk-alpine
 
-COPY target/auth-service-0.0.1-SNAPSHOT.jar auth-service.jar
+COPY target/userProfiles-service-0.0.1-SNAPSHOT.jar userProfiles-service.jar
 EXPOSE 8081
 
-ENTRYPOINT ["java", "-jar", "auth-service.jar"]
+ENTRYPOINT ["java", "-jar", "userProfiles-service.jar"]

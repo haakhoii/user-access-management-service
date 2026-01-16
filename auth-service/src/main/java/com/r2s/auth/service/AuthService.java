@@ -11,13 +11,5 @@ public interface AuthService {
 
     AuthResponse login(LoginRequest request);
 
-//    UserResponse update(UpdateUserRequest request);
-//
-//    String delete();
-//
-//    PageResponse<UserResponse> getList(int page, int size);
-//
-//    UserResponse getMe();
-//
     IntrospectResponse introspect(IntrospectRequest request);
 }

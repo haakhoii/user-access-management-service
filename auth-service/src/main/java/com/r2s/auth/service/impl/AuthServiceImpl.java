@@ -1,16 +1,17 @@
 package com.r2s.auth.service.impl;
 
+import com.r2s.auth.entity.Role;
+import com.r2s.auth.entity.User;
 import com.r2s.auth.mapper.AuthMapper;
 import com.r2s.auth.repository.AuthRepository;
+import com.r2s.auth.repository.RoleRepository;
 import com.r2s.auth.service.AuthService;
 import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.request.IntrospectRequest;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
-import com.r2s.auth.entity.Auth;
 import com.r2s.core.dto.response.IntrospectResponse;
-import com.r2s.core.enums.Role;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.AccessLevel;
@@ -20,11 +21,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthServiceImpl implements AuthService {
     AuthRepository authRepository;
+    RoleRepository roleRepository;
     PasswordEncoder passwordEncoder;
     JwtToken jwtToken;
 
@@ -34,23 +38,25 @@ public class AuthServiceImpl implements AuthService {
             throw new AppException(ErrorCode.USER_EXISTS);
         }
 
-        Auth auth = AuthMapper.toUser(request);
-        auth.setPassword(passwordEncoder.encode(request.getPassword()));
-        auth.setRole(Role.USER);
-        authRepository.save(auth);
+        User user = AuthMapper.toUser(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        Role userRole = roleRepository.findByName("ROLE_USER")
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+        user.setRoles(Set.of(userRole));
+        authRepository.save(user);
 
-        return "User created successfully with userId = " + auth.getId();
+        return "User created successfully with userId = " + user.getId();
     }
 
     @Override
     public AuthResponse login(LoginRequest request) {
-        Auth auth = authRepository.findByUsername(request.getUsername())
+        User user = authRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-        if (!passwordEncoder.matches(request.getPassword(), auth.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new AppException(ErrorCode.PASSWORD_INVALID);
         }
 
-        return jwtToken.generateToken(auth);
+        return jwtToken.generateToken(user);
     }
 
     @Override

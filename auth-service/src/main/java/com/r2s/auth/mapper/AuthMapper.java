@@ -1,20 +1,26 @@
 package com.r2s.auth.mapper;
 
-import com.r2s.auth.entity.Auth;
+import com.r2s.auth.entity.User;
 import com.r2s.core.dto.request.RegisterRequest;
-import com.r2s.core.dto.response.UserResponse;
+
+import java.util.UUID;
 
 public class AuthMapper {
-    public static Auth toUser(RegisterRequest request) {
-        return Auth.builder()
+    public static User toUser(RegisterRequest request) {
+        return User.builder()
+                .id(UUID.randomUUID())
                 .username(request.getUsername())
+                .enabled(true)
                 .build();
     }
 
-    public static UserResponse toUserResponse(Auth user) {
-        return UserResponse.builder()
-                .username(user.getUsername())
-                .role(user.getRole().name())
-                .build();
-    }
+//    public static UserResponse toUserResponse(User user) {
+//        return UserResponse.builder()
+//                .username(user.getUsername())
+//                .role(user.getRoles()
+//                        .stream()
+//                        .map(Role::getName)
+//                        .toList())
+//                .build();
+//    }
 }

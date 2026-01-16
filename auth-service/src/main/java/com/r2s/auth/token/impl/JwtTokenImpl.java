@@ -3,9 +3,10 @@ package com.r2s.auth.token.impl;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
+import com.r2s.auth.entity.Role;
+import com.r2s.auth.entity.User;
 import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.response.AuthResponse;
-import com.r2s.auth.entity.Auth;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -32,17 +34,22 @@ public class JwtTokenImpl implements JwtToken {
     private long EXPIRY;
 
     @Override
-    public AuthResponse generateToken(Auth auth) {
+    public AuthResponse generateToken(User user) {
         try {
+            String scope = user.getRoles()
+                    .stream()
+                    .map(Role::getName)
+                    .collect(Collectors.joining(" "));
+
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                    .subject(auth.getId())
+                    .subject(user.getId().toString())
                     .issuer("r2s")
                     .issueTime(Date.from(Instant.now()))
                     .expirationTime(Date.from(Instant.now().plus(EXPIRY, ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
-                    .claim("username", auth.getUsername())
-                    .claim("scope", "ROLE_" + auth.getRole().name())
+                    .claim("username", user.getUsername())
+                    .claim("scope", scope)
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());

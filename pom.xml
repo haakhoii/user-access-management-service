@@ -8,7 +8,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.r2s</groupId>
-    <artifactId>user-access-management-service</artifactId>
+    <artifactId>userProfiles-access-management-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 

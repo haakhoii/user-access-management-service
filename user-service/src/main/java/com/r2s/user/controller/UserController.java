@@ -12,6 +12,8 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -57,7 +59,7 @@ public class UserController {
 
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    ApiResponse<String> delete(@PathVariable("id") String id) {
+    ApiResponse<String> delete(@PathVariable("id") UUID id) {
         return ApiResponse.<String>builder()
                 .result(userService.delete(id))
                 .build();

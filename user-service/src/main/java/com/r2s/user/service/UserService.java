@@ -5,6 +5,8 @@ import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 
+import java.util.UUID;
+
 public interface UserService {
     UserResponse create(UserCreatedRequest request);
 
@@ -14,5 +16,5 @@ public interface UserService {
 
     UserResponse update(UserUpdatedRequest request);
 
-    String delete(String id);
+    String delete(UUID id);
 }

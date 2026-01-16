@@ -12,6 +12,8 @@ public enum ErrorCode {
     TOKEN_GENERATION_FAILED(1002, "Token generation failed", HttpStatus.UNAUTHORIZED),
     ACCOUNT_NOT_FOUND(1003, "Account not found", HttpStatus.NOT_FOUND),
     INVALID_REQUEST(1004, "Invalid request", HttpStatus.BAD_REQUEST),
+    ROLE_NOT_FOUND(1005, "Role not found", HttpStatus.NOT_FOUND),
+
 
     USER_NOT_FOUND(2001, "User not found", HttpStatus.NOT_FOUND),
     USER_EXISTS(2002, "User exists", HttpStatus.BAD_REQUEST),
