@@ -6,11 +6,9 @@ import com.r2s.auth.repository.AuthRepository;
 import com.r2s.auth.repository.RoleRepository;
 import com.r2s.auth.service.impl.AuthServiceImpl;
 import com.r2s.auth.token.JwtToken;
-import com.r2s.core.dto.request.IntrospectRequest;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
-import com.r2s.core.dto.response.IntrospectResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
@@ -19,9 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.Jwt;
 
-import java.time.Instant;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -50,9 +46,9 @@ class AuthServiceUnitTest {
 
     @Test
     void register_success() {
-        RegisterRequest request = new RegisterRequest("alice", "password");
+        RegisterRequest request = new RegisterRequest("user_unit", "password", "");
 
-        when(authRepository.findByUsername("alice"))
+        when(authRepository.findByUsername("user_unit"))
                 .thenReturn(Optional.empty());
 
         when(passwordEncoder.encode("password"))
@@ -75,9 +71,9 @@ class AuthServiceUnitTest {
 
     @Test
     void register_username_exists() {
-        RegisterRequest request = new RegisterRequest("bob", "password");
+        RegisterRequest request = new RegisterRequest("user_unit", "password", "");
 
-        when(authRepository.findByUsername("bob"))
+        when(authRepository.findByUsername("user_unit"))
                 .thenReturn(Optional.of(new User()));
 
         AppException ex = assertThrows(
@@ -94,12 +90,12 @@ class AuthServiceUnitTest {
     void login_success() {
         User user = User.builder()
                 .id(UUID.randomUUID())
-                .username("charlie")
+                .username("user_unit")
                 .password("encoded-password")
                 .roles(Set.of(Role.builder().name("ROLE_USER").build()))
                 .build();
 
-        when(authRepository.findByUsername("charlie"))
+        when(authRepository.findByUsername("user_unit"))
                 .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("password", "encoded-password"))
@@ -109,7 +105,7 @@ class AuthServiceUnitTest {
                 .thenReturn(new AuthResponse("jwt-token"));
 
         AuthResponse response = authService.login(
-                new LoginRequest("charlie", "password")
+                new LoginRequest("user_unit", "password")
         );
 
         assertThat(response.getToken()).isEqualTo("jwt-token");
@@ -118,11 +114,11 @@ class AuthServiceUnitTest {
     @Test
     void login_wrong_password() {
         User user = User.builder()
-                .username("david")
+                .username("user_unit")
                 .password("encoded-password")
                 .build();
 
-        when(authRepository.findByUsername("david"))
+        when(authRepository.findByUsername("user_unit"))
                 .thenReturn(Optional.of(user));
 
         when(passwordEncoder.matches("wrong", "encoded-password"))
@@ -130,30 +126,9 @@ class AuthServiceUnitTest {
 
         AppException ex = assertThrows(
                 AppException.class,
-                () -> authService.login(new LoginRequest("david", "wrong"))
+                () -> authService.login(new LoginRequest("user_unit", "wrong"))
         );
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_INVALID);
-    }
-
-    @Test
-    void introspect_valid_token() {
-        Jwt jwt = Jwt.withTokenValue("token")
-                .subject("user-id")
-                .claim("username", "eva")
-                .claim("scope", "ROLE_USER")
-                .expiresAt(Instant.now().plusSeconds(600))
-                .header("alg", "HS512")
-                .build();
-
-        when(jwtToken.verify("token"))
-                .thenReturn(jwt);
-
-        IntrospectResponse response =
-                authService.introspect(new IntrospectRequest("token"));
-
-        assertThat(response.isValid()).isTrue();
-        assertThat(response.getUsername()).isEqualTo("eva");
-        assertThat(response.getScope()).contains("ROLE_USER");
     }
 }

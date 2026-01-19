@@ -23,6 +23,12 @@ public class UserProfiles implements Serializable {
     @Column(name = "user_id", nullable = false)
     UUID userId;
 
+    @Column(nullable = false, unique = true, length = 100)
+    String username;
+
+    @Column(nullable = false)
+    String roles;
+
     @Column(name = "full_name", length = 100)
     String fullName;
 

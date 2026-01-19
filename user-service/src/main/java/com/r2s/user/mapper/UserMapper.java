@@ -6,12 +6,20 @@ import com.r2s.user.entity.UserProfiles;
 
 import java.util.List;
 import java.util.UUID;
+
 public class UserMapper {
 
-    public static UserProfiles toEntity(UserCreatedRequest request, UUID userId) {
+    public static UserProfiles toUser(
+            UserCreatedRequest request,
+            UUID userId,
+            String username,
+            List<String> roles
+    ) {
         return UserProfiles.builder()
                 .id(UUID.randomUUID())
                 .userId(userId)
+                .username(username)
+                .roles(String.join(",", roles))
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
@@ -20,14 +28,13 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserResponse toResponse(
-            UserProfiles profile,
-            String username,
-            List<String> roles
-    ) {
+    public static UserResponse toUserResponse(UserProfiles profile) {
         return UserResponse.builder()
-                .username(username)
-                .role(roles)
+                .username(profile.getUsername())
+                .role(profile.getRoles() != null
+                        ? List.of(profile.getRoles().split(","))
+                        : List.of()
+                )
                 .fullName(profile.getFullName())
                 .email(profile.getEmail())
                 .build();

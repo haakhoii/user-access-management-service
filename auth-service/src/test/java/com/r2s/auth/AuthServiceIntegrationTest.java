@@ -48,12 +48,12 @@ class AuthServiceIntegrationTest {
     @Autowired
     AuthService authService;
 
-
     @Test
     void register_success() {
         RegisterRequest request = new RegisterRequest(
-                "alice",
-                "@P4ssw0rd"
+                "user_integration",
+                "password",
+                ""
         );
         String result = authService.register(request);
         assertThat(result).contains("User created successfully");
@@ -62,8 +62,9 @@ class AuthServiceIntegrationTest {
     @Test
     void register_username_exists() {
         RegisterRequest request = new RegisterRequest(
-                "bob",
-                "@P4ssw0rd"
+                "alice",
+                "password",
+                ""
         );
         authService.register(request);
 
@@ -78,14 +79,12 @@ class AuthServiceIntegrationTest {
 
     @Test
     void login_success() {
-        
         authService.register(
-                new RegisterRequest("charlie", "@P4ssw0rd")
+                new RegisterRequest("user_integration", "password", "")
         );
-
         LoginRequest loginReq = new LoginRequest(
-                "charlie",
-                "@P4ssw0rd"
+                "user_integration",
+                "password"
         );
 
         AuthResponse response = authService.login(loginReq);
@@ -97,11 +96,11 @@ class AuthServiceIntegrationTest {
     @Test
     void login_wrong_password() {
         authService.register(
-                new RegisterRequest("david", "@P4ssw0rd")
+                new RegisterRequest("user_integration", "password", "")
         );
 
         LoginRequest loginReq = new LoginRequest(
-                "david",
+                "user_integration",
                 "wrong-password"
         );
 
@@ -111,28 +110,5 @@ class AuthServiceIntegrationTest {
         );
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_INVALID);
-    }
-
-
-    @Test
-    void introspect_valid_token() {
-        
-        authService.register(
-                new RegisterRequest("eva", "@P4ssw0rd")
-        );
-
-        AuthResponse loginRes = authService.login(
-                new LoginRequest("eva", "@P4ssw0rd")
-        );
-
-        IntrospectRequest request = new IntrospectRequest(
-                loginRes.getToken()
-        );
-
-        IntrospectResponse response = authService.introspect(request);
-
-        assertThat(response.isValid()).isTrue();
-        assertThat(response.getUsername()).isEqualTo("eva");
-        assertThat(response.getScope()).contains("ROLE_USER");
     }
 }

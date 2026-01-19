@@ -1,6 +1,8 @@
 CREATE TABLE user_profiles (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    roles TEXT NOT NULL,
     full_name VARCHAR(100),
     email VARCHAR(100) UNIQUE,
     phone VARCHAR(20),

@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!-- ================== PROPERTIES ================== -->
-    <property name="LOG_PATH" value="logs"/>
+    <property name="LOG_PATH"
+              value="D:/workspace/springboot/user-access-management-service/logs"/>
+
     <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{40} - %msg%n"/>
 
-    <!-- ================== INFO FILE ================== -->
     <appender name="INFO_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+              class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-info.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/app-info.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
+        <append>true</append>
 
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
@@ -27,15 +23,10 @@
         </encoder>
     </appender>
 
-    <!-- ================== ERROR FILE ================== -->
     <appender name="ERROR_FILE"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
+              class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-error.log</file>
-
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/app-error.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
+        <append>true</append>
 
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
@@ -48,23 +39,18 @@
         </encoder>
     </appender>
 
-    <!-- ================== CONSOLE ================== -->
-    <appender name="CONSOLE"
-              class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${LOG_PATTERN}</pattern>
-        </encoder>
-    </appender>
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.flywaydb" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
 
-    <!-- ================== LOGGER ================== -->
-    <logger name="org.springframework.web" level="INFO"/>
-    <logger name="com.r2s" level="DEBUG"/>
-
-    <!-- ================== ROOT ================== -->
-    <root level="INFO">
+    <logger name="com.r2s" level="INFO" additivity="false">
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="ERROR_FILE"/>
-        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <root level="ERROR">
+        <appender-ref ref="ERROR_FILE"/>
     </root>
 
 </configuration>

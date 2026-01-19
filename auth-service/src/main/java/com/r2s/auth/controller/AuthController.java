@@ -30,6 +30,7 @@ public class AuthController {
 
     @PostMapping("/login")
     ApiResponse<AuthResponse> login(@RequestBody LoginRequest request) {
+        log.info("Login attempt with username: {}", request.getUsername());
         return ApiResponse.<AuthResponse>builder()
                 .result(authService.login(request))
                 .build();
@@ -37,6 +38,7 @@ public class AuthController {
 
     @PostMapping("/introspect")
     ApiResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) {
+        log.info("Introspect token request");
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authService.introspect(request))
                 .build();

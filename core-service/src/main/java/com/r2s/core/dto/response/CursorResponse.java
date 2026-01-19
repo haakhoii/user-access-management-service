@@ -1,15 +1,17 @@
-package com.r2s.core.dto.request;
+package com.r2s.core.dto.response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.List;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RegisterRequest {
-    String username;
-    String password;
-    String role;
+public class CursorResponse<T> {
+    List<T> data;
+    String nextCursor;
+    boolean hasNext;
 }
