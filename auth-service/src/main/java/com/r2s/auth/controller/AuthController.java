@@ -7,6 +7,7 @@ import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
 import com.r2s.core.dto.response.IntrospectResponse;
+import com.r2s.core.dto.response.MeResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +42,13 @@ public class AuthController {
         log.info("Introspect token request");
         return ApiResponse.<IntrospectResponse>builder()
                 .result(authService.introspect(request))
+                .build();
+    }
+
+    @GetMapping("/me")
+    ApiResponse<MeResponse> me() {
+        return ApiResponse.<MeResponse>builder()
+                .result(authService.getMe())
                 .build();
     }
 

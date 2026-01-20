@@ -12,18 +12,23 @@ import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
 import com.r2s.core.dto.response.IntrospectResponse;
+import com.r2s.core.dto.response.MeResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -103,4 +108,32 @@ public class AuthServiceImpl implements AuthService {
                     .build();
         }
     }
+
+    @Override
+    public MeResponse getMe() {
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // sub = userId (UUID)
+        UUID userId = UUID.fromString(jwt.getSubject());
+
+        User user = authRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+
+        return MeResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .roles(
+                        user.getRoles()
+                                .stream()
+                                .map(Role::getName)
+                                .collect(Collectors.toSet())
+                )
+                .build();
+    }
+
 }

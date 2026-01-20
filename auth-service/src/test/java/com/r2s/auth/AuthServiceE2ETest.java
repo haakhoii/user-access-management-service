@@ -4,11 +4,13 @@ import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.AuthResponse;
+import com.r2s.core.dto.response.MeResponse;
 import com.r2s.core.exception.ErrorCode;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
@@ -22,11 +24,10 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
 class AuthServiceE2ETest {
-    private static final String BASE_URL = "http://localhost:8081/auth";
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -43,109 +44,107 @@ class AuthServiceE2ETest {
 
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
-
-        registry.add("server.port", () -> 8081);
-        registry.add("server.servlet.context-path", () -> "/auth");
     }
+
+    @LocalServerPort
+    int port;
+
     @Autowired
     TestRestTemplate restTemplate;
 
+    private String url(String path) {
+        return "http://localhost:" + port + path;
+    }
+
+    // happy case
     @Test
-    void e2e_register_success() {
-        String username = "e2e_user_" + UUID.randomUUID();
+    void e2e_register_login_get_me_success() {
+        String username = "e2e_" + UUID.randomUUID();
+        String password = "123456";
 
-        RegisterRequest request = new RegisterRequest(username, "password", "user");
-
-        ResponseEntity<ApiResponse<String>> response =
+        // register
+        ResponseEntity<ApiResponse<String>> registerRes =
                 restTemplate.exchange(
-                        BASE_URL + "/register",
+                        url("/register"),
                         HttpMethod.POST,
-                        new HttpEntity<>(request),
+                        new HttpEntity<>(new RegisterRequest(username, password, "user")),
                         new ParameterizedTypeReference<>() {}
                 );
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getResult())
-                .contains("User created successfully");
+        assertThat(registerRes.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        // login
+        ResponseEntity<ApiResponse<AuthResponse>> loginRes =
+                restTemplate.exchange(
+                        url("/login"),
+                        HttpMethod.POST,
+                        new HttpEntity<>(new LoginRequest(username, password)),
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        assertThat(loginRes.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        String token = loginRes.getBody().getResult().getToken();
+        assertThat(token).isNotBlank();
+
+        // get Me
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+
+        ResponseEntity<ApiResponse<MeResponse>> meRes =
+                restTemplate.exchange(
+                        url("/me"),
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        assertThat(meRes.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(meRes.getBody()).isNotNull();
+        assertThat(meRes.getBody().getResult().getUsername()).isEqualTo(username);
+        assertThat(meRes.getBody().getResult().getRoles()).contains("ROLE_USER");
+    }
+
+    // NEGATIVE CASES
+    @Test
+    void e2e_get_me_without_token_unauthorized() {
+        ResponseEntity<ApiResponse> response =
+                restTemplate.getForEntity(url("/me"), ApiResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
     @Test
-    void e2e_register_username_exists() {
-        String username = "e2e_dup_" + UUID.randomUUID();
+    void e2e_register_duplicate_username() {
+        String username = "dup_" + UUID.randomUUID();
+        RegisterRequest req = new RegisterRequest(username, "123456", "user");
 
-        RegisterRequest request = new RegisterRequest(username, "password", "user");
-
-        restTemplate.postForEntity(
-                BASE_URL + "/register",
-                request,
-                Object.class
-        );
+        restTemplate.postForEntity(url("/register"), req, Object.class);
 
         ResponseEntity<ApiResponse> response =
-                restTemplate.postForEntity(
-                        BASE_URL + "/register",
-                        request,
-                        ApiResponse.class
-                );
+                restTemplate.postForEntity(url("/register"), req, ApiResponse.class);
 
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody().getCode())
                 .isEqualTo(ErrorCode.USER_EXISTS.getCode());
     }
 
     @Test
-    void e2e_login_success() {
-        String username = "e2e_login_" + UUID.randomUUID();
-        String password = "password";
-
-        restTemplate.postForEntity(
-                BASE_URL + "/register",
-                new RegisterRequest(username, password, "admin"),
-                Object.class
-        );
-
-        LoginRequest loginRequest = new LoginRequest(username, password);
-
-        ResponseEntity<ApiResponse<AuthResponse>> response =
-                restTemplate.exchange(
-                        BASE_URL + "/login",
-                        HttpMethod.POST,
-                        new HttpEntity<>(loginRequest),
-                        new ParameterizedTypeReference<>() {}
-                );
-
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getBody().getResult()).isNotNull();
-        assertThat(response.getBody().getResult().getToken()).isNotBlank();
-    }
-
-    @Test
     void e2e_login_wrong_password() {
-        String username = "e2e_wrong_" + UUID.randomUUID();
-        String password = "password";
+        String username = "wrong_" + UUID.randomUUID();
 
         restTemplate.postForEntity(
-                BASE_URL + "/register",
-                new RegisterRequest(username, password, ""),
+                url("/register"),
+                new RegisterRequest(username, "123456", "user"),
                 Object.class
         );
 
-        LoginRequest loginRequest = new LoginRequest(username, "wrong-password");
+        LoginRequest login = new LoginRequest(username, "wrong");
 
         ResponseEntity<ApiResponse> response =
-                restTemplate.postForEntity(
-                        BASE_URL + "/login",
-                        loginRequest,
-                        ApiResponse.class
-                );
+                restTemplate.postForEntity(url("/login"), login, ApiResponse.class);
 
-        assertThat(response.getStatusCode())
-                .isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(response.getBody().getCode())
                 .isEqualTo(ErrorCode.PASSWORD_INVALID.getCode());
     }

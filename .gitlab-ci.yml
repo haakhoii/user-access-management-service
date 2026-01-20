@@ -1,5 +1,9 @@
 image: maven:3.9.6-eclipse-temurin-21
 
+services:
+  - name: docker:24.0.5-dind
+    command: ["--tls=false"]
+
 stages:
   - build
   - test
@@ -8,13 +12,16 @@ stages:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   SPRING_PROFILES_ACTIVE: test
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  TESTCONTAINERS_RYUK_DISABLED: "true"
+  TESTCONTAINERS_CHECKS_DISABLE: "true"
 
 cache:
   key: maven-cache
   paths:
     - .m2/repository
 
-# build
 build-job:
   stage: build
   tags: [local]
@@ -28,7 +35,6 @@ build-job:
       - auth-service/target/*.jar
       - user-service/target/*.jar
 
-# test
 test-job:
   stage: test
   tags: [local]
@@ -36,10 +42,9 @@ test-job:
     - chmod +x mvnw
   script:
     - ./mvnw install -pl core-service -am -DskipTests
-    - ./mvnw test -pl auth-service
-    - ./mvnw test -pl user-service
+    - ./mvnw test -pl auth-service -Dspring.profiles.active=test
+    - ./mvnw test -pl user-service -Dspring.profiles.active=test
 
-# deploy
 deploy-job:
   stage: deploy
   tags: [local]
