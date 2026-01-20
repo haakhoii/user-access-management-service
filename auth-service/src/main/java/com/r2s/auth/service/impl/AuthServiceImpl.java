@@ -51,13 +51,11 @@ public class AuthServiceImpl implements AuthService {
         roles.add(defaultRole);
         if (request.getRole() != null && !request.getRole().isBlank()) {
             String roleRequest = request.getRole().trim().toUpperCase();
-
             if (!roleRequest.startsWith("ROLE_")) {
                 roleRequest = "ROLE_" + roleRequest;
             }
             Role role = roleRepository.findByName(roleRequest)
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
-
             roles.add(role);
         }
         user.setRoles(roles);

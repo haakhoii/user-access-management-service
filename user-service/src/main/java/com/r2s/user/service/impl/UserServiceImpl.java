@@ -2,7 +2,6 @@ package com.r2s.user.service.impl;
 
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
-import com.r2s.core.dto.response.CursorResponse;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 import com.r2s.core.exception.AppException;
@@ -20,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -121,42 +119,6 @@ public class UserServiceImpl implements UserService {
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
                 .data(data)
-                .build();
-    }
-
-    @Override
-    public CursorResponse<UserResponse> getListCursor(LocalDateTime cursor, int size) {
-
-        if (size <= 0) {
-            throw new AppException(ErrorCode.INVALID_REQUEST);
-        }
-
-        Pageable pageable = PageRequest.of(0, size);
-
-        List<UserProfiles> profiles = userRepository.findByCursor(cursor, pageable);
-
-        List<UserResponse> data = profiles.stream()
-                .map(UserMapper::toUserResponse)
-                .toList();
-
-        boolean hasNext = profiles.size() == size;
-
-        String nextCursor = hasNext
-                ? profiles.get(profiles.size() - 1)
-                .getCreatedAt()
-                .toString()
-                : null;
-
-        log.info("Fetched user list by cursor: cursor={}, size={}, hasNext={}",
-                cursor,
-                size,
-                hasNext
-        );
-
-        return CursorResponse.<UserResponse>builder()
-                .data(data)
-                .nextCursor(nextCursor)
-                .hasNext(hasNext)
                 .build();
     }
 

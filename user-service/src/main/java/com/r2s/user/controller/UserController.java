@@ -3,7 +3,6 @@ package com.r2s.user.controller;
 import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
-import com.r2s.core.dto.response.CursorResponse;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 import com.r2s.user.service.UserService;
@@ -14,8 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -48,20 +45,6 @@ public class UserController {
                 .result(userService.getList(page, size))
                 .build();
     }
-
-    @GetMapping("/list/cursor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    ApiResponse<CursorResponse<UserResponse>> getList(
-            @RequestParam(required = false) String cursor,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        LocalDateTime cursorTime = cursor != null ? LocalDateTime.parse(cursor) : null;
-        log.info("Get user list cursor={}, size={}", cursor, size);
-        return ApiResponse.<CursorResponse<UserResponse>>builder()
-                .result(userService.getListCursor(cursorTime, size))
-                .build();
-    }
-
 
     @GetMapping("/me")
     ApiResponse<UserResponse> getMe() {

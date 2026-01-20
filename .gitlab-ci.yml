@@ -14,7 +14,7 @@ cache:
   paths:
     - .m2/repository
 
-# ================= BUILD =================
+# build
 build-job:
   stage: build
   tags: [local]
@@ -28,23 +28,18 @@ build-job:
       - auth-service/target/*.jar
       - user-service/target/*.jar
 
-# ================= TEST =================
+# test
 test-job:
   stage: test
   tags: [local]
   before_script:
     - chmod +x mvnw
   script:
-    # build core first
     - ./mvnw install -pl core-service -am -DskipTests
-
-    # Auth E2E (Testcontainers)
     - ./mvnw test -pl auth-service
-
-    # User E2E (Testcontainers)
     - ./mvnw test -pl user-service
 
-# ================= DEPLOY =================
+# deploy
 deploy-job:
   stage: deploy
   tags: [local]

@@ -2,11 +2,9 @@ package com.r2s.user.service;
 
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
-import com.r2s.core.dto.response.CursorResponse;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserResponse;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 public interface UserService {
@@ -19,6 +17,4 @@ public interface UserService {
     UserResponse update(UserUpdatedRequest request);
 
     String delete(UUID id);
-
-    CursorResponse<UserResponse> getListCursor(LocalDateTime cursorTime, int size);
 }
