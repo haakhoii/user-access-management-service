@@ -105,7 +105,7 @@ class AuthServiceE2ETest {
         assertThat(meRes.getBody().getResult().getRoles()).contains("ROLE_USER");
     }
 
-    // NEGATIVE CASES
+    // negative case
     @Test
     void e2e_get_me_without_token_unauthorized() {
         ResponseEntity<ApiResponse> response =
