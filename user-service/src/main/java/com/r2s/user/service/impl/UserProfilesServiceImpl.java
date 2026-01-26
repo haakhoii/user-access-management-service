@@ -6,6 +6,9 @@ import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
+import com.r2s.user.domain.factory.UserProfileFactory;
+import com.r2s.user.domain.helper.SecurityContextHelper;
+import com.r2s.user.domain.validation.UserProfileValidation;
 import com.r2s.user.entity.UserProfiles;
 import com.r2s.user.mapper.UserProfilesMapper;
 import com.r2s.user.repository.UserProfileRepository;
@@ -14,12 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.UUID;
 
 import static lombok.AccessLevel.PRIVATE;
@@ -30,137 +29,86 @@ import static lombok.AccessLevel.PRIVATE;
 @Slf4j
 public class UserProfilesServiceImpl implements UserProfilesService {
     UserProfileRepository userProfileRepository;
-
-    private JwtAuthenticationToken jwt() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!(auth instanceof JwtAuthenticationToken jwt)) {
-            throw new AppException(ErrorCode.UNAUTHORIZED);
-        }
-        return jwt;
-    }
-
-    private UUID getUserId() {
-        return UUID.fromString(jwt().getName());
-    }
-
-    private String getUsername() {
-        return jwt().getToken().getClaimAsString("username");
-    }
-
-    private List<String> getRoles() {
-        String scope = jwt().getToken().getClaimAsString("scope");
-        return List.of(scope.split(" "));
-    }
+    SecurityContextHelper securityContextHelper;
+    UserProfileFactory userProfileFactory;
+    UserProfileValidation userProfileValidation;
 
     @Override
     public UserProfileResponse create(UserCreatedRequest request) {
-        UUID userId = getUserId();
+        UUID userId = securityContextHelper.getCurrentUserId();
+        userProfileValidation.validateCreate(userId);
 
-        userProfileRepository.findByUserId(userId)
-                .ifPresent(u -> {
-                    throw new AppException(ErrorCode.USER_EXISTS);
-                });
-
-        UserProfiles profile = UserProfilesMapper.toUser(
+        UserProfiles profile = userProfileFactory.create(
                 request,
                 userId,
-                getUsername(),
-                getRoles()
+                securityContextHelper.getCurrentUsername(),
+                securityContextHelper.getCurrentRoles()
         );
-
         userProfileRepository.save(profile);
+        log.info("User profile created successfully: {}", profile);
 
-        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
-
-        log.info("User profile created successfully: {}", response);
-        return response;
+        return UserProfilesMapper.toUserResponse(profile);
     }
 
     @Override
     public UserProfileResponse getMe() {
-        UserProfiles profile = userProfileRepository.findByUserId(getUserId())
+        UUID userId = securityContextHelper.getCurrentUserId();
+        UserProfiles profile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        log.info("Get user profile successfully: {}", profile);
 
-        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
-        log.info("Get my profile: {}", response);
-
-        return response;
+        return UserProfilesMapper.toUserResponse(profile);
     }
 
     @Override
     public PageResponse<UserProfileResponse> getList(int page, int size) {
-
-        if (page <= 0 || size <= 0) {
-            throw new AppException(ErrorCode.INVALID_REQUEST);
-        }
-
+        userProfileValidation.validatePagination(page, size);
         Pageable pageable = PageRequest.of(
                 page - 1,
                 size,
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
-
         Page<UserProfiles> pageData = userProfileRepository.findAll(pageable);
-
-        List<UserProfileResponse> data = pageData.getContent()
-                .stream()
-                .map(UserProfilesMapper::toUserResponse)
-                .toList();
-
-        log.info("Fetched user list: page={}, size={}, total={}",
-                page,
-                size,
-                pageData.getTotalElements()
-        );
+        log.info("Get list user profile: {}", pageData);
 
         return PageResponse.<UserProfileResponse>builder()
                 .currentPage(page)
                 .pageSize(size)
                 .totalPages(pageData.getTotalPages())
                 .totalElements(pageData.getTotalElements())
-                .data(data)
+                .data(
+                        pageData.getContent()
+                                .stream()
+                                .map(UserProfilesMapper::toUserResponse)
+                                .toList()
+                )
                 .build();
     }
 
     @Override
     public UserProfileResponse update(UserUpdatedRequest request) {
-
-        UserProfiles profile = userProfileRepository.findByUserId(getUserId())
+        UUID userId = securityContextHelper.getCurrentUserId();
+        UserProfiles profile = userProfileRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        if (request.getFullName() != null) {
-            profile.setFullName(request.getFullName());
-        }
-        if (request.getEmail() != null) {
-            profile.setEmail(request.getEmail());
-        }
-        if (request.getPhone() != null) {
-            profile.setPhone(request.getPhone());
-        }
-        if (request.getAddress() != null) {
-            profile.setAddress(request.getAddress());
-        }
-        if (request.getAvatarUrl() != null) {
-            profile.setAvatarUrl(request.getAvatarUrl());
-        }
-
+        if (request.getFullName() != null) profile.setFullName(request.getFullName());
+        if (request.getEmail() != null) profile.setEmail(request.getEmail());
+        if (request.getPhone() != null) profile.setPhone(request.getPhone());
+        if (request.getAddress() != null) profile.setAddress(request.getAddress());
+        if (request.getAvatarUrl() != null) profile.setAvatarUrl(request.getAvatarUrl());
         userProfileRepository.save(profile);
+        log.info("User profile updated successfully: {}", profile);
 
-        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
-        log.info("User profile updated successfully: {}", response);
-
-        return response;
+        return UserProfilesMapper.toUserResponse(profile);
     }
 
     @Override
     public String delete(UUID id) {
-
         UserProfiles profile = userProfileRepository.findByUserId(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
         userProfileRepository.delete(profile);
+        log.info("User profile deleted successfully: {}", profile);
 
-        log.info("User profile deleted successfully, userId={}", id);
         return "User profile deleted successfully";
     }
 }

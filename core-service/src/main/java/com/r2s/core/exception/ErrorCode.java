@@ -13,7 +13,7 @@ public enum ErrorCode {
     ACCOUNT_NOT_FOUND(1003, "Account not found", HttpStatus.NOT_FOUND),
     INVALID_REQUEST(1004, "Invalid request", HttpStatus.BAD_REQUEST),
     ROLE_NOT_FOUND(1005, "Role not found", HttpStatus.NOT_FOUND),
-    TOO_MANY_REQUESTS(429, "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
+    LOGIN_BLOCKED(429, "Too many requests", HttpStatus.TOO_MANY_REQUESTS),
 
     USER_NOT_FOUND(2001, "User not found", HttpStatus.NOT_FOUND),
     USER_EXISTS(2002, "User exists", HttpStatus.BAD_REQUEST),

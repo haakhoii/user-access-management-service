@@ -36,7 +36,7 @@ public class JwtTokenImpl implements JwtToken {
     @Override
     public TokenResponse generateToken(User user) {
         try {
-            String scope = user.getRoles()
+            String role = user.getRoles()
                     .stream()
                     .map(Role::getName)
                     .collect(Collectors.joining(" "));
@@ -49,7 +49,12 @@ public class JwtTokenImpl implements JwtToken {
                     .expirationTime(Date.from(Instant.now().plus(EXPIRY, ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
                     .claim("username", user.getUsername())
-                    .claim("scope", scope)
+                    .claim("roles",
+                            user.getRoles()
+                                    .stream()
+                                    .map(Role::getName)
+                                    .toList()
+                    )
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());

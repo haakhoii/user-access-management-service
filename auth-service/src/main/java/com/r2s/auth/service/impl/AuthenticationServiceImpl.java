@@ -25,7 +25,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     JwtToken jwtToken;
     AuthenticationValidation authenticationValidation;
 
-
     @Override
     public TokenResponse login(LoginRequest request) {
         User user = authenticationValidation.validateLogin(request);

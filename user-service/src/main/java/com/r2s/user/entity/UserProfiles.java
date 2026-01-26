@@ -3,9 +3,11 @@ package com.r2s.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -17,7 +19,9 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserProfiles implements Serializable {
     @Id
-    @Column(columnDefinition = "UUID")
+    @GeneratedValue
+    @UuidGenerator
+    @Column(columnDefinition = "UUID", updatable = false, nullable = false)
     UUID id;
 
     @Column(name = "user_id", nullable = false)
@@ -26,8 +30,14 @@ public class UserProfiles implements Serializable {
     @Column(nullable = false, unique = true, length = 100)
     String username;
 
-    @Column(nullable = false)
-    String roles;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "user_profile_roles",
+            joinColumns = @JoinColumn(name = "profile_id")
+    )
+    @Column(name = "role")
+    List<String> roles;
+
 
     @Column(name = "full_name", length = 100)
     String fullName;

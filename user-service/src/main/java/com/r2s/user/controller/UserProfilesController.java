@@ -6,6 +6,7 @@ import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.user.service.UserProfilesService;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,7 +29,7 @@ public class UserProfilesController {
     }
 
     @PostMapping("/create")
-    ApiResponse<UserProfileResponse> create(@RequestBody UserCreatedRequest request) {
+    ApiResponse<UserProfileResponse> create(@Valid @RequestBody UserCreatedRequest request) {
         log.info("User profile created request: {}", request);
         return ApiResponse.<UserProfileResponse>builder()
                 .result(userProfilesService.create(request))
@@ -41,6 +42,7 @@ public class UserProfilesController {
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "4") int size
     ) {
+        log.info("Get all user");
         return ApiResponse.<PageResponse<UserProfileResponse>>builder()
                 .result(userProfilesService.getList(page, size))
                 .build();
@@ -55,7 +57,7 @@ public class UserProfilesController {
     }
 
     @PutMapping("/update")
-    ApiResponse<UserProfileResponse> update(@RequestBody UserUpdatedRequest request) {
+    ApiResponse<UserProfileResponse> update(@Valid @RequestBody UserUpdatedRequest request) {
         log.info("Update profile request: {}", request);
         return ApiResponse.<UserProfileResponse>builder()
                 .result(userProfilesService.update(request))
@@ -65,7 +67,7 @@ public class UserProfilesController {
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     ApiResponse<String> delete(@PathVariable("id") UUID id) {
-        log.info("Delete user profile request with userId={}", id);
+        log.info("Delete user profile request with userId: {}", id);
         return ApiResponse.<String>builder()
                 .result(userProfilesService.delete(id))
                 .build();

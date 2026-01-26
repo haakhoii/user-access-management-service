@@ -6,13 +6,12 @@ services:
     image: postgres:15
     container_name: postgres-user-system
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: Abc123
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5433:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-#      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
   auth-service:
@@ -20,16 +19,15 @@ services:
       context: ./auth-service
     container_name: auth-service-user-system
     ports:
-      - "8081:8081"
+      - "${AUTH_SERVICE_PORT}:8081"
     depends_on:
       - postgres
-    env_file:
-      - .env
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: Abc123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: ${AUTH_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
     restart: unless-stopped
 
   user-service:
@@ -37,16 +35,14 @@ services:
       context: ./user-service
     container_name: user-service-user-system
     ports:
-      - "8082:8082"
+      - "${USER_SERVICE_PORT}:8082"
     depends_on:
       - postgres
-    env_file:
-      - .env
     environment:
-      SPRING_PROFILES_ACTIVE: dev
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/user_service
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: Abc123
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: ${USER_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
     restart: unless-stopped
 
 volumes:

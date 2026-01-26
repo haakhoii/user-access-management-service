@@ -1,5 +1,6 @@
 package com.r2s.user.config;
 
+import com.r2s.core.constants.SecurityConstants;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(10);
+        return new BCryptPasswordEncoder(SecurityConstants.BCRYPT_STRENGTH);
     }
 
     @Bean
@@ -55,6 +56,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
+        authorities.setAuthoritiesClaimName("roles");
         authorities.setAuthorityPrefix("");
 
         JwtAuthenticationConverter authentication = new JwtAuthenticationConverter();
