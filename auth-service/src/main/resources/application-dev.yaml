@@ -26,6 +26,11 @@ spring:
     locations:
       classpath: db/migration
 
+#  data:
+#    redis:
+#      host: redis-user-system
+#      port: 6379
+
 management:
   endpoints:
     web:
@@ -34,3 +39,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+jwt:
+  signerKey: ${JWT_SIGNER_KEY}
+  expiry: 15

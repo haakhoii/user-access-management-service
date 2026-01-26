@@ -6,7 +6,7 @@ import com.nimbusds.jwt.JWTClaimsSet;
 import com.r2s.auth.entity.Role;
 import com.r2s.auth.entity.User;
 import com.r2s.auth.token.JwtToken;
-import com.r2s.core.dto.response.AuthResponse;
+import com.r2s.core.dto.response.TokenResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,7 @@ public class JwtTokenImpl implements JwtToken {
     private long EXPIRY;
 
     @Override
-    public AuthResponse generateToken(User user) {
+    public TokenResponse generateToken(User user) {
         try {
             String scope = user.getRoles()
                     .stream()
@@ -57,7 +57,7 @@ public class JwtTokenImpl implements JwtToken {
 
             object.sign(new MACSigner(SIGNER_KEY.getBytes()));
 
-            return new AuthResponse(
+            return new TokenResponse(
                     object.serialize()
             );
         } catch (JOSEException e) {

@@ -6,5 +6,5 @@ spring:
     active: dev
 
 jwt:
-  signerKey: qxDRHYT3pRMIJkG7pFsaUkbSkFr3+X3hi3n1ci64B7mAS7RH+Ws4V0ao/nHyyBgGWZY2FpEKCgTXNUpf79t2Tw==
+  signerKey: ${JWT_SIGNER_KEY}
   expiry: 15

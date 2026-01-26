@@ -8,7 +8,7 @@ import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.user.entity.UserProfiles;
-import com.r2s.user.repository.UserRepository;
+import com.r2s.user.repository.UserProfileRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @ActiveProfiles("test")
 @Testcontainers
-class UserServiceE2ETest {
+class UserProfilesServiceE2ETest {
 
     private static final String BASE_URL = "http://localhost:8082";
 
@@ -63,19 +63,19 @@ class UserServiceE2ETest {
     TestRestTemplate restTemplate;
 
     @Autowired
-    UserRepository userRepository;
+    UserProfileRepository userProfileRepository;
 
     UUID userId;
     UUID adminId;
 
     @BeforeEach
     void setup() {
-        userRepository.deleteAll();
+        userProfileRepository.deleteAll();
 
         userId = UUID.randomUUID();
         adminId = UUID.randomUUID();
 
-        userRepository.save(
+        userProfileRepository.save(
                 UserProfiles.builder()
                         .id(UUID.randomUUID())
                         .userId(userId)
@@ -84,7 +84,7 @@ class UserServiceE2ETest {
                         .build()
         );
 
-        userRepository.save(
+        userProfileRepository.save(
                 UserProfiles.builder()
                         .id(UUID.randomUUID())
                         .userId(adminId)
@@ -203,7 +203,7 @@ class UserServiceE2ETest {
         String token = generateJwt(adminId, "e2e_admin", "ADMIN");
 
         UUID deleteUserId =
-                userRepository.findAll().stream()
+                userProfileRepository.findAll().stream()
                         .filter(u -> u.getRoles().contains("ROLE_USER"))
                         .findFirst()
                         .orElseThrow()

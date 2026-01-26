@@ -3,10 +3,10 @@ package com.r2s.user;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
-import com.r2s.core.dto.response.UserResponse;
+import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
-import com.r2s.user.service.UserService;
+import com.r2s.user.service.UserProfilesService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("test")
 @Testcontainers
 @Transactional
-class UserServiceIntegrationTest {
+class UserProfilesServiceIntegrationTest {
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -54,7 +54,7 @@ class UserServiceIntegrationTest {
     }
 
     @Autowired
-    UserService userService;
+    UserProfilesService userProfilesService;
 
     private UUID mockAuthenticatedUser() {
         UUID userId = UUID.randomUUID();
@@ -88,7 +88,7 @@ class UserServiceIntegrationTest {
         request.setFullName("Integration User");
         request.setEmail("integration@mail.com");
 
-        UserResponse response = userService.create(request);
+        UserProfileResponse response = userProfilesService.create(request);
 
         assertThat(response).isNotNull();
         assertThat(response.getUsername()).isEqualTo("integration_user");
@@ -99,11 +99,11 @@ class UserServiceIntegrationTest {
     void create_userExists() {
         mockAuthenticatedUser();
 
-        userService.create(new UserCreatedRequest());
+        userProfilesService.create(new UserCreatedRequest());
 
         AppException ex = assertThrows(
                 AppException.class,
-                () -> userService.create(new UserCreatedRequest())
+                () -> userProfilesService.create(new UserCreatedRequest())
         );
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USER_EXISTS);
@@ -113,9 +113,9 @@ class UserServiceIntegrationTest {
     void getMe_success() {
         mockAuthenticatedUser();
 
-        userService.create(new UserCreatedRequest());
+        userProfilesService.create(new UserCreatedRequest());
 
-        UserResponse response = userService.getMe();
+        UserProfileResponse response = userProfilesService.getMe();
 
         assertThat(response.getUsername()).isEqualTo("integration_user");
     }
@@ -126,7 +126,7 @@ class UserServiceIntegrationTest {
 
         AppException ex = assertThrows(
                 AppException.class,
-                () -> userService.getMe()
+                () -> userProfilesService.getMe()
         );
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USER_NOT_FOUND);
@@ -135,10 +135,10 @@ class UserServiceIntegrationTest {
     @Test
     void getList_success() {
         mockAuthenticatedUser();
-        userService.create(new UserCreatedRequest());
+        userProfilesService.create(new UserCreatedRequest());
 
-        PageResponse<UserResponse> result =
-                userService.getList(1, 10);
+        PageResponse<UserProfileResponse> result =
+                userProfilesService.getList(1, 10);
 
         assertThat(result.getTotalElements()).isGreaterThan(0);
         assertThat(result.getData()).isNotEmpty();
@@ -148,7 +148,7 @@ class UserServiceIntegrationTest {
     void getList_invalidRequest() {
         AppException ex = assertThrows(
                 AppException.class,
-                () -> userService.getList(0, 10)
+                () -> userProfilesService.getList(0, 10)
         );
 
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.INVALID_REQUEST);
@@ -157,12 +157,12 @@ class UserServiceIntegrationTest {
     @Test
     void update_success() {
         mockAuthenticatedUser();
-        userService.create(new UserCreatedRequest());
+        userProfilesService.create(new UserCreatedRequest());
 
         UserUpdatedRequest request = new UserUpdatedRequest();
         request.setFullName("Updated Integration User");
 
-        UserResponse response = userService.update(request);
+        UserProfileResponse response = userProfilesService.update(request);
 
         assertThat(response.getFullName())
                 .isEqualTo("Updated Integration User");
@@ -171,9 +171,9 @@ class UserServiceIntegrationTest {
     @Test
     void delete_success() {
         UUID userId = mockAuthenticatedUser();
-        userService.create(new UserCreatedRequest());
+        userProfilesService.create(new UserCreatedRequest());
 
-        String result = userService.delete(userId);
+        String result = userProfilesService.delete(userId);
 
         assertThat(result)
                 .contains("User profile deleted successfully");

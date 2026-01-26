@@ -1,13 +1,13 @@
 package com.r2s.user.mapper;
 
 import com.r2s.core.dto.request.UserCreatedRequest;
-import com.r2s.core.dto.response.UserResponse;
+import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.user.entity.UserProfiles;
 
 import java.util.List;
 import java.util.UUID;
 
-public class UserMapper {
+public class UserProfilesMapper {
 
     public static UserProfiles toUser(
             UserCreatedRequest request,
@@ -28,8 +28,8 @@ public class UserMapper {
                 .build();
     }
 
-    public static UserResponse toUserResponse(UserProfiles profile) {
-        return UserResponse.builder()
+    public static UserProfileResponse toUserResponse(UserProfiles profile) {
+        return UserProfileResponse.builder()
                 .username(profile.getUsername())
                 .role(profile.getRoles() != null
                         ? List.of(profile.getRoles().split(","))

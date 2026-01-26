@@ -23,8 +23,7 @@ log/
 Thumbs.db
 
 docker-compose.override.yml
-*.env
-.env.*
+.env
 
 *.pem
 *.key

@@ -3,13 +3,13 @@ package com.r2s.user.service.impl;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
-import com.r2s.core.dto.response.UserResponse;
+import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import com.r2s.user.entity.UserProfiles;
-import com.r2s.user.mapper.UserMapper;
-import com.r2s.user.repository.UserRepository;
-import com.r2s.user.service.UserService;
+import com.r2s.user.mapper.UserProfilesMapper;
+import com.r2s.user.repository.UserProfileRepository;
+import com.r2s.user.service.UserProfilesService;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
@@ -28,8 +28,8 @@ import static lombok.AccessLevel.PRIVATE;
 @RequiredArgsConstructor
 @FieldDefaults(level = PRIVATE, makeFinal = true)
 @Slf4j
-public class UserServiceImpl implements UserService {
-    UserRepository userRepository;
+public class UserProfilesServiceImpl implements UserProfilesService {
+    UserProfileRepository userProfileRepository;
 
     private JwtAuthenticationToken jwt() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -53,42 +53,42 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse create(UserCreatedRequest request) {
+    public UserProfileResponse create(UserCreatedRequest request) {
         UUID userId = getUserId();
 
-        userRepository.findByUserId(userId)
+        userProfileRepository.findByUserId(userId)
                 .ifPresent(u -> {
                     throw new AppException(ErrorCode.USER_EXISTS);
                 });
 
-        UserProfiles profile = UserMapper.toUser(
+        UserProfiles profile = UserProfilesMapper.toUser(
                 request,
                 userId,
                 getUsername(),
                 getRoles()
         );
 
-        userRepository.save(profile);
+        userProfileRepository.save(profile);
 
-        UserResponse response = UserMapper.toUserResponse(profile);
+        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
 
         log.info("User profile created successfully: {}", response);
         return response;
     }
 
     @Override
-    public UserResponse getMe() {
-        UserProfiles profile = userRepository.findByUserId(getUserId())
+    public UserProfileResponse getMe() {
+        UserProfiles profile = userProfileRepository.findByUserId(getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        UserResponse response = UserMapper.toUserResponse(profile);
+        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
         log.info("Get my profile: {}", response);
 
         return response;
     }
 
     @Override
-    public PageResponse<UserResponse> getList(int page, int size) {
+    public PageResponse<UserProfileResponse> getList(int page, int size) {
 
         if (page <= 0 || size <= 0) {
             throw new AppException(ErrorCode.INVALID_REQUEST);
@@ -100,11 +100,11 @@ public class UserServiceImpl implements UserService {
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
 
-        Page<UserProfiles> pageData = userRepository.findAll(pageable);
+        Page<UserProfiles> pageData = userProfileRepository.findAll(pageable);
 
-        List<UserResponse> data = pageData.getContent()
+        List<UserProfileResponse> data = pageData.getContent()
                 .stream()
-                .map(UserMapper::toUserResponse)
+                .map(UserProfilesMapper::toUserResponse)
                 .toList();
 
         log.info("Fetched user list: page={}, size={}, total={}",
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
                 pageData.getTotalElements()
         );
 
-        return PageResponse.<UserResponse>builder()
+        return PageResponse.<UserProfileResponse>builder()
                 .currentPage(page)
                 .pageSize(size)
                 .totalPages(pageData.getTotalPages())
@@ -123,9 +123,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse update(UserUpdatedRequest request) {
+    public UserProfileResponse update(UserUpdatedRequest request) {
 
-        UserProfiles profile = userRepository.findByUserId(getUserId())
+        UserProfiles profile = userProfileRepository.findByUserId(getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         if (request.getFullName() != null) {
@@ -144,9 +144,9 @@ public class UserServiceImpl implements UserService {
             profile.setAvatarUrl(request.getAvatarUrl());
         }
 
-        userRepository.save(profile);
+        userProfileRepository.save(profile);
 
-        UserResponse response = UserMapper.toUserResponse(profile);
+        UserProfileResponse response = UserProfilesMapper.toUserResponse(profile);
         log.info("User profile updated successfully: {}", response);
 
         return response;
@@ -155,10 +155,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public String delete(UUID id) {
 
-        UserProfiles profile = userRepository.findByUserId(id)
+        UserProfiles profile = userProfileRepository.findByUserId(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        userRepository.delete(profile);
+        userProfileRepository.delete(profile);
 
         log.info("User profile deleted successfully, userId={}", id);
         return "User profile deleted successfully";

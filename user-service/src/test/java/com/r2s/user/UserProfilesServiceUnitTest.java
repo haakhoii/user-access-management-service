@@ -3,12 +3,12 @@ package com.r2s.user;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
-import com.r2s.core.dto.response.UserResponse;
+import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import com.r2s.user.entity.UserProfiles;
-import com.r2s.user.repository.UserRepository;
-import com.r2s.user.service.impl.UserServiceImpl;
+import com.r2s.user.repository.UserProfileRepository;
+import com.r2s.user.service.impl.UserProfilesServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +36,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceUnitTest {
+class UserProfilesServiceUnitTest {
 
     @Mock
-    UserRepository userRepository;
+    UserProfileRepository userProfileRepository;
 
     @InjectMocks
-    UserServiceImpl userService;
+    UserProfilesServiceImpl userService;
 
     UUID userId;
 
@@ -94,24 +94,24 @@ class UserServiceUnitTest {
         request.setFullName("Test User");
         request.setEmail("test@mail.com");
 
-        when(userRepository.findByUserId(userId))
+        when(userProfileRepository.findByUserId(userId))
                 .thenReturn(Optional.empty());
-        when(userRepository.save(any(UserProfiles.class)))
+        when(userProfileRepository.save(any(UserProfiles.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
-        UserResponse response = userService.create(request);
+        UserProfileResponse response = userService.create(request);
 
         assertEquals("username", response.getUsername());
         assertEquals("Test User", response.getFullName());
 
-        verify(userRepository).save(any(UserProfiles.class));
+        verify(userProfileRepository).save(any(UserProfiles.class));
     }
 
     @Test
     void create_userExists_throwException() {
         mockAuthenticatedUser(userId);
 
-        when(userRepository.findByUserId(userId))
+        when(userProfileRepository.findByUserId(userId))
                 .thenReturn(Optional.of(new UserProfiles()));
 
         AppException ex = assertThrows(
@@ -126,10 +126,10 @@ class UserServiceUnitTest {
     void getMe_success() {
         mockAuthenticatedUser(userId);
 
-        when(userRepository.findByUserId(userId))
+        when(userProfileRepository.findByUserId(userId))
                 .thenReturn(Optional.of(mockProfile()));
 
-        UserResponse response = userService.getMe();
+        UserProfileResponse response = userService.getMe();
 
         assertEquals("username", response.getUsername());
     }
@@ -138,7 +138,7 @@ class UserServiceUnitTest {
     void getMe_notFound() {
         mockAuthenticatedUser(userId);
 
-        when(userRepository.findByUserId(userId))
+        when(userProfileRepository.findByUserId(userId))
                 .thenReturn(Optional.empty());
 
         AppException ex = assertThrows(
@@ -159,10 +159,10 @@ class UserServiceUnitTest {
                 1
         );
 
-        when(userRepository.findAll(any(Pageable.class)))
+        when(userProfileRepository.findAll(any(Pageable.class)))
                 .thenReturn(page);
 
-        PageResponse<UserResponse> result = userService.getList(1, 10);
+        PageResponse<UserProfileResponse> result = userService.getList(1, 10);
 
         assertEquals(1, result.getTotalElements());
         assertEquals(1, result.getData().size());
@@ -180,15 +180,15 @@ class UserServiceUnitTest {
     void update_success() {
         mockAuthenticatedUser(userId);
 
-        when(userRepository.findByUserId(userId))
+        when(userProfileRepository.findByUserId(userId))
                 .thenReturn(Optional.of(mockProfile()));
-        when(userRepository.save(any()))
+        when(userProfileRepository.save(any()))
                 .thenAnswer(inv -> inv.getArgument(0));
 
         UserUpdatedRequest request = new UserUpdatedRequest();
         request.setFullName("Updated Name");
 
-        UserResponse response = userService.update(request);
+        UserProfileResponse response = userService.update(request);
 
         assertEquals("Updated Name", response.getFullName());
     }
@@ -198,12 +198,12 @@ class UserServiceUnitTest {
         UUID deleteId = UUID.randomUUID();
         UserProfiles profile = new UserProfiles();
 
-        when(userRepository.findByUserId(deleteId))
+        when(userProfileRepository.findByUserId(deleteId))
                 .thenReturn(Optional.of(profile));
 
         String result = userService.delete(deleteId);
 
         assertEquals("User profile deleted successfully", result);
-        verify(userRepository).delete(profile);
+        verify(userProfileRepository).delete(profile);
     }
 }

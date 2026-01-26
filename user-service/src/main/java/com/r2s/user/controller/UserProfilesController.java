@@ -4,8 +4,8 @@ import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.dto.request.UserCreatedRequest;
 import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
-import com.r2s.core.dto.response.UserResponse;
-import com.r2s.user.service.UserService;
+import com.r2s.core.dto.response.UserProfileResponse;
+import com.r2s.user.service.UserProfilesService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,8 +19,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
-public class UserController {
-    UserService userService;
+public class UserProfilesController {
+    UserProfilesService userProfilesService;
 
     @GetMapping("/hello")
     public String hello() {
@@ -28,37 +28,37 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    ApiResponse<UserResponse> create(@RequestBody UserCreatedRequest request) {
+    ApiResponse<UserProfileResponse> create(@RequestBody UserCreatedRequest request) {
         log.info("User profile created request: {}", request);
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.create(request))
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userProfilesService.create(request))
                 .build();
     }
 
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    ApiResponse<PageResponse<UserResponse>> getList(
+    ApiResponse<PageResponse<UserProfileResponse>> getList(
             @RequestParam(name = "page", defaultValue = "1") int page,
             @RequestParam(name = "size", defaultValue = "4") int size
     ) {
-        return ApiResponse.<PageResponse<UserResponse>>builder()
-                .result(userService.getList(page, size))
+        return ApiResponse.<PageResponse<UserProfileResponse>>builder()
+                .result(userProfilesService.getList(page, size))
                 .build();
     }
 
     @GetMapping("/me")
-    ApiResponse<UserResponse> getMe() {
+    ApiResponse<UserProfileResponse> getMe() {
         log.info("Get my profile request");
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.getMe())
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userProfilesService.getMe())
                 .build();
     }
 
     @PutMapping("/update")
-    ApiResponse<UserResponse> update(@RequestBody UserUpdatedRequest request) {
+    ApiResponse<UserProfileResponse> update(@RequestBody UserUpdatedRequest request) {
         log.info("Update profile request: {}", request);
-        return ApiResponse.<UserResponse>builder()
-                .result(userService.update(request))
+        return ApiResponse.<UserProfileResponse>builder()
+                .result(userProfilesService.update(request))
                 .build();
     }
 
@@ -67,7 +67,7 @@ public class UserController {
     ApiResponse<String> delete(@PathVariable("id") UUID id) {
         log.info("Delete user profile request with userId={}", id);
         return ApiResponse.<String>builder()
-                .result(userService.delete(id))
+                .result(userProfilesService.delete(id))
                 .build();
     }
 }

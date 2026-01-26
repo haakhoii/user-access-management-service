@@ -1,22 +1,16 @@
 package com.r2s.core.dto.response;
 
 import lombok.*;
-import lombok.experimental.FieldDefaults;
 
-import javax.management.relation.Role;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class UserResponse {
+    UUID id;
     String username;
-
-    List<String> role;
-
-    String fullName;
-
-    String email;
+    Set<String> roles;
 }
