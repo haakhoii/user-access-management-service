@@ -15,7 +15,7 @@ public class UserMapper {
                 .sub(jwt.getSubject())
                 .username(jwt.getClaim("username"))
                 .exp(jwt.getExpiresAt())
-                .scope(jwt.getClaim("scope"))
+                .scope(jwt.getClaim("roles"))
                 .build();
     }
 

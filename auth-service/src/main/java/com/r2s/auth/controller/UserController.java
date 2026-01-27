@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping("/register")
     ApiResponse<String> register(@Valid @RequestBody RegisterRequest request) {
-        log.info("Register with request: {}", request);
+        log.info("Register with username: {}", request.getUsername());
         return ApiResponse.<String>builder()
                 .result(userService.register(request))
                 .build();
