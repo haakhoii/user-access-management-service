@@ -2,11 +2,9 @@ package com.r2s.auth.service.impl;
 
 import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
 import com.r2s.auth.service.RateLimitService;
-import com.r2s.core.constants.RateLimitType;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +18,16 @@ public class RateLimitServiceImpl implements RateLimitService {
     private final RateLimitRedisKey redisKey;
 
     @Override
-    public boolean isBlocked(String baseKey) {
-        return Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)));
-    }
+    public void checkAndConsume(String baseKey, int max, Duration ttl) {
+        if (Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)))) {
+            throw new AppException(ErrorCode.TOO_MANY_REQUEST);
+        }
+        Long count = redis.opsForValue().increment(baseKey);
 
-    @Override
-    public void onFailure(String baseKey, int maxAttempts, Duration ttl) {
-        Long attempts = redis.opsForValue().increment(baseKey);
-
-        if (attempts != null && attempts == 1) {
+        if (count != null && count == 1) {
             redis.expire(baseKey, ttl);
         }
-
-        if (attempts != null && attempts >= maxAttempts) {
+        if (count != null && count > max) {
             redis.opsForValue().set(
                     redisKey.blocked(baseKey),
                     "1",
@@ -40,11 +35,5 @@ public class RateLimitServiceImpl implements RateLimitService {
             );
             throw new AppException(ErrorCode.TOO_MANY_REQUEST);
         }
-    }
-
-    @Override
-    public void onSuccess(String baseKey) {
-        redis.delete(baseKey);
-        redis.delete(redisKey.blocked(baseKey));
     }
 }
