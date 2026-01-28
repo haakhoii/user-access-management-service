@@ -1,7 +1,5 @@
-package com.r2s.auth.service.impl;
+package com.r2s.auth.domain.rateLimit;
 
-import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
-import com.r2s.auth.service.RateLimitService;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +10,11 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-public class RateLimitServiceImpl implements RateLimitService {
+public class RateLimitService {
 
     private final RedisTemplate<String, Object> redis;
     private final RateLimitRedisKey redisKey;
 
-    @Override
     public void checkAndConsume(String baseKey, int max, Duration ttl) {
         if (Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)))) {
             throw new AppException(ErrorCode.TOO_MANY_REQUEST);

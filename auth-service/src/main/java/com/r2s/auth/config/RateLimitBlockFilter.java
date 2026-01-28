@@ -1,10 +1,13 @@
 package com.r2s.auth.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.r2s.auth.domain.rateLimit.ClientKeyResolver;
 import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
-import com.r2s.auth.service.RateLimitService;
+import com.r2s.auth.domain.rateLimit.RateLimitService;
 import com.r2s.core.constants.RateLimitType;
+import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.exception.AppException;
+import com.r2s.core.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,7 +51,18 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
         } catch (AppException ex) {
             response.setStatus(429);
             response.setContentType("application/json");
-            response.getWriter().write("code: 429, message: Too many requests. Please try again later.");
+
+            response.setStatus(429);
+            response.setContentType("application/json");
+
+            ApiResponse<?> apiResponse = ApiResponse.builder()
+                    .code(ErrorCode.TOO_MANY_REQUEST.getCode())
+                    .message(ErrorCode.TOO_MANY_REQUEST.getMessage())
+                    .build();
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+            response.flushBuffer();
         }
     }
 }
