@@ -4,20 +4,18 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class RateLimitRedisKey {
+    public String base(String method, String path, String clientKey) {
+        return "rate_limit:" + method + ":" + path + ":" + normalize(clientKey);
+    }
 
-    private static final int SUFFIX_LENGTH = 5;
-
-    public String build(String type, String value) {
-        return "rate_limit:" + type + ":" + normalize(value);
+    public String blocked(String baseKey) {
+        return baseKey + ":blocked";
     }
 
     private String normalize(String value) {
-        if (value == null) {
-            return "null";
-        }
-        if (value.length() <= SUFFIX_LENGTH) {
-            return value;
-        }
-        return value.substring(value.length() - SUFFIX_LENGTH);
+        if (value == null) return "null";
+        if (value.length() <= 8) return value;
+        return value.substring(value.length() - 8);
     }
 }
+

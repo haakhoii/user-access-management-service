@@ -7,10 +7,10 @@ import org.springframework.stereotype.Component;
 public class ClientKeyResolver {
 
     public String resolve(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return "token:" + authHeader.substring(7).hashCode();
+        String auth = request.getHeader("Authorization");
+        if (auth != null && auth.startsWith("Bearer ")) {
+            return auth.substring(7);
         }
-        return "ip:" + request.getRemoteAddr();
+        return request.getRemoteAddr();
     }
 }

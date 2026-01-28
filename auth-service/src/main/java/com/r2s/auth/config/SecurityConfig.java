@@ -24,7 +24,7 @@ public class SecurityConfig {
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final CustomRateLimitFilter customRateLimitFilter;
+    private final RateLimitBlockFilter rateLimitBlockFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/register",
@@ -41,10 +41,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(
-                        customRateLimitFilter,
-                        BearerTokenAuthenticationFilter.class
-                )
+                .addFilterBefore(rateLimitBlockFilter, BearerTokenAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()
@@ -68,7 +65,6 @@ public class SecurityConfig {
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(authorities);
-
         return converter;
     }
 }

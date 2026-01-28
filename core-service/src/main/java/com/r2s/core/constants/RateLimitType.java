@@ -4,6 +4,7 @@ public final class RateLimitType {
     private RateLimitType() {}
 
     public static final String LOGIN = "login";
+    public static final String GLOBAL = "global";
     public static final String INTROSPECT = "introspect";
     public static final String GET_ME = "get_me";
 

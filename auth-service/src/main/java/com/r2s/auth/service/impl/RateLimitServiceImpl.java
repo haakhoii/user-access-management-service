@@ -2,6 +2,7 @@ package com.r2s.auth.service.impl;
 
 import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
 import com.r2s.auth.service.RateLimitService;
+import com.r2s.core.constants.RateLimitType;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -13,35 +14,37 @@ import java.time.Duration;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class RateLimitServiceImpl implements RateLimitService {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redis;
     private final RateLimitRedisKey redisKey;
 
     @Override
-    public void check(
-            String type,
-            String value,
-            int maxAttempts,
-            Duration duration
-    ) {
-        String key = redisKey.build(type, value);
+    public boolean isBlocked(String baseKey) {
+        return Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)));
+    }
 
-        Long attempts = redisTemplate.opsForValue().increment(key);
-        log.info("RATE_LIMIT type={}, key={}, attempts={}", type, key, attempts);
+    @Override
+    public void onFailure(String baseKey, int maxAttempts, Duration ttl) {
+        Long attempts = redis.opsForValue().increment(baseKey);
 
         if (attempts != null && attempts == 1) {
-            redisTemplate.expire(key, duration);
+            redis.expire(baseKey, ttl);
         }
 
-        if (attempts != null && attempts > maxAttempts) {
+        if (attempts != null && attempts >= maxAttempts) {
+            redis.opsForValue().set(
+                    redisKey.blocked(baseKey),
+                    "1",
+                    ttl
+            );
             throw new AppException(ErrorCode.TOO_MANY_REQUEST);
         }
     }
 
     @Override
-    public void reset(String type, String value) {
-        redisTemplate.delete(redisKey.build(type, value));
+    public void onSuccess(String baseKey) {
+        redis.delete(baseKey);
+        redis.delete(redisKey.blocked(baseKey));
     }
 }

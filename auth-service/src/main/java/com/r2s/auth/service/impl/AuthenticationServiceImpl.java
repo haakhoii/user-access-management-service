@@ -1,5 +1,6 @@
 package com.r2s.auth.service.impl;
 
+import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
 import com.r2s.auth.domain.validation.authentication.AuthenticationValidation;
 import com.r2s.auth.entity.User;
 import com.r2s.auth.mapper.UserMapper;
@@ -29,25 +30,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     JwtToken jwtToken;
     AuthenticationValidation authenticationValidation;
     RateLimitService rateLimitService;
-    HttpServletRequest request;
 
     @Override
     public TokenResponse login(LoginRequest request) {
+
         String username = request.getUsername().toLowerCase();
+        String baseKey = "rate_limit:POST:/auth/login:" + username;
 
-        rateLimitService.check(
-                RateLimitType.LOGIN,
-                username,
-                RateLimitType.ATTEMPTS,
-                Duration.ofMinutes(RateLimitType.TIME_TO_LIVE)
-        );
+        try {
+            User user = authenticationValidation.validateLogin(request);
 
-        User user = authenticationValidation.validateLogin(request);
+            rateLimitService.onSuccess(baseKey);
+            return jwtToken.generateToken(user);
 
-        rateLimitService.reset(RateLimitType.LOGIN, username);
+        } catch (Exception ex) {
 
-        log.info("Login success username: {}", username);
-        return jwtToken.generateToken(user);
+            rateLimitService.onFailure(
+                    baseKey,
+                    RateLimitType.ATTEMPTS,
+                    Duration.ofMinutes(RateLimitType.TIME_TO_LIVE)
+            );
+            throw ex;
+        }
     }
 
 

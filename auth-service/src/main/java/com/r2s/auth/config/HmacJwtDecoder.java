@@ -3,8 +3,6 @@ package com.r2s.auth.config;
 import com.nimbusds.jose.JWSVerifier;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.SignedJWT;
-import com.r2s.core.exception.AppException;
-import com.r2s.core.exception.ErrorCode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -15,6 +13,7 @@ import java.time.Instant;
 
 @Component
 public class HmacJwtDecoder implements JwtDecoder {
+
     @Value("${jwt.signerKey}")
     private String signerKey;
 
@@ -25,14 +24,15 @@ public class HmacJwtDecoder implements JwtDecoder {
             JWSVerifier verifier = new MACVerifier(signerKey.getBytes());
 
             if (!signedJWT.verify(verifier)) {
-                throw new AppException(ErrorCode.UNAUTHORIZED);
+                throw new JwtException("Invalid JWT signature");
             }
 
             Instant exp = signedJWT.getJWTClaimsSet()
-                    .getExpirationTime().toInstant();
+                    .getExpirationTime()
+                    .toInstant();
 
             if (exp.isBefore(Instant.now())) {
-                throw new AppException(ErrorCode.UNAUTHORIZED);
+                throw new JwtException("JWT expired");
             }
 
             return new Jwt(
@@ -43,8 +43,11 @@ public class HmacJwtDecoder implements JwtDecoder {
                     signedJWT.getJWTClaimsSet().getClaims()
             );
 
-        } catch (Exception e) {
-            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+        } catch (JwtException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new JwtException("Invalid JWT", ex);
         }
     }
 }
+
