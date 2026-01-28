@@ -6,16 +6,18 @@ import com.r2s.core.dto.response.IntrospectResponse;
 import com.r2s.core.dto.response.UserResponse;
 import org.springframework.security.oauth2.jwt.Jwt;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class UserMapper {
-    public static IntrospectResponse toIntrospectResponses(Jwt jwt) {
+    public static IntrospectResponse toIntrospectResponse(Jwt jwt) {
         return IntrospectResponse.builder()
                 .valid(true)
-                .sub(jwt.getSubject())
-                .username(jwt.getClaim("username"))
-                .exp(jwt.getExpiresAt())
-                .scope(jwt.getClaim("roles"))
+                .userId(jwt.getSubject())
+                .username(jwt.getClaimAsString("username"))
+                .roles(jwt.getClaim("roles") instanceof List
+                        ? jwt.getClaim("roles")
+                        : List.of())
                 .build();
     }
 

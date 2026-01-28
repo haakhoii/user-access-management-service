@@ -75,3 +75,4 @@ public class JwtTokenImpl implements JwtToken {
         return jwtDecoder.decode(token);
     }
 }
+

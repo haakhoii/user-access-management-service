@@ -1,4 +1,4 @@
-package com.r2s.user.domain.helper;
+package com.r2s.auth.domain.helper;
 
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;

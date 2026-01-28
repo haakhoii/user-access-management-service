@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -20,13 +21,14 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CustomRateLimitFilter customRateLimitFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/register",
             "/login",
-            "/introspect",
             "/actuator/health"
     };
 
@@ -39,11 +41,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers(PUBLIC_ENDPOINTS)
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated()
+                .addFilterBefore(
+                        customRateLimitFilter,
+                        BearerTokenAuthenticationFilter.class
+                )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
                         .jwt(jwt -> jwt
@@ -52,9 +56,9 @@ public class SecurityConfig {
                         )
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
+
         return http.build();
     }
-
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
@@ -62,9 +66,9 @@ public class SecurityConfig {
         authorities.setAuthoritiesClaimName("roles");
         authorities.setAuthorityPrefix("");
 
-        JwtAuthenticationConverter authentication = new JwtAuthenticationConverter();
-        authentication.setJwtGrantedAuthoritiesConverter(authorities);
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(authorities);
 
-        return authentication;
+        return converter;
     }
 }

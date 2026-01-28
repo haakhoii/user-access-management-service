@@ -44,10 +44,10 @@ public class UserController {
     }
 
     @PostMapping("/introspect")
-    ApiResponse<IntrospectResponse> introspect(@Valid @RequestBody IntrospectRequest request) {
+    ApiResponse<IntrospectResponse> introspect() {
         log.info("Introspect token request");
         return ApiResponse.<IntrospectResponse>builder()
-                .result(authenticationService.introspect(request))
+                .result(authenticationService.introspect())
                 .build();
     }
 

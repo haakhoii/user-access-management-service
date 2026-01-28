@@ -1,5 +1,6 @@
 package com.r2s.auth.service.impl;
 
+import com.r2s.auth.domain.helper.SecurityContextHelper;
 import com.r2s.auth.domain.role.RoleNormalizerResolver;
 import com.r2s.auth.domain.validation.user.UserValidation;
 import com.r2s.auth.entity.Role;
@@ -18,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +37,7 @@ public class UserServiceImpl implements UserService {
     UserFactory userFactory;
     RoleNormalizerResolver roleNormalizerResolver;
     UserValidation userValidation;
+    SecurityContextHelper securityContextHelper;
 
     private Set<Role> assignRoles(RegisterRequest request) {
         Set<Role> roles = new HashSet<>();
@@ -63,17 +63,16 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         log.info("User created with username: {}", user.getUsername());
 
-        return "User created with id = " + user.getId();
+        return "User created with id: " + user.getId();
     }
 
     @Override
     public UserResponse getMe() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UUID userId = UUID.fromString(auth.getName());
+        UUID userId = securityContextHelper.getCurrentUserId();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        log.info("Get user successfully: {}", user);
+        log.info("Get user successfully: userId={}", userId);
         return UserMapper.toUserResponse(user);
     }
 
