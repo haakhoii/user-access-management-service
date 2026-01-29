@@ -41,7 +41,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(rateLimitBlockFilter, BearerTokenAuthenticationFilter.class)
+                .addFilterBefore(
+                        rateLimitBlockFilter,
+                        BearerTokenAuthenticationFilter.class
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()

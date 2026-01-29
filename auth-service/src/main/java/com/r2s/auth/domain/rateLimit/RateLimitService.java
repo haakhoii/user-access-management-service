@@ -1,7 +1,5 @@
 package com.r2s.auth.domain.rateLimit;
 
-import com.r2s.core.exception.AppException;
-import com.r2s.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -15,12 +13,11 @@ public class RateLimitService {
     private final RedisTemplate<String, Object> redis;
     private final RateLimitRedisKey redisKey;
 
-    public void checkAndConsume(String baseKey, int max, Duration ttl) {
+    public boolean checkAndConsume(String baseKey, int max, Duration ttl) {
         if (Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)))) {
-            throw new AppException(ErrorCode.TOO_MANY_REQUEST);
+            return false;
         }
         Long count = redis.opsForValue().increment(baseKey);
-
         if (count != null && count == 1) {
             redis.expire(baseKey, ttl);
         }
@@ -30,7 +27,9 @@ public class RateLimitService {
                     "1",
                     ttl
             );
-            throw new AppException(ErrorCode.TOO_MANY_REQUEST);
+            return false;
         }
+        return true;
     }
 }
+

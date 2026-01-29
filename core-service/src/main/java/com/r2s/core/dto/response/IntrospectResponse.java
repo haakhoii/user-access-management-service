@@ -3,8 +3,8 @@ package com.r2s.core.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.Instant;
-import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -13,7 +13,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class IntrospectResponse {
     boolean valid;
-    String userId;
+    UUID userId;
     String username;
-    List<String> roles;
+    Set<String> roles;
 }

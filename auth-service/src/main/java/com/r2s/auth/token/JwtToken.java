@@ -6,6 +6,4 @@ import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface JwtToken {
     TokenResponse generateToken(User user);
-
-    Jwt verify(String token);
 }

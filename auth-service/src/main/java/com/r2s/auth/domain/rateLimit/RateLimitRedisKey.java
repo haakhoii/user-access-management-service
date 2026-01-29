@@ -14,8 +14,8 @@ public class RateLimitRedisKey {
 
     private String normalize(String value) {
         if (value == null) return "null";
-        if (value.length() <= 8) return value;
-        return value.substring(value.length() - 8);
+        if (value.length() <= 5) return value;
+        return value.substring(value.length() - 5);
     }
 }
 

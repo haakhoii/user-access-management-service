@@ -13,6 +13,9 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -26,6 +29,7 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
     private final RateLimitService rateLimitService;
     private final RateLimitRedisKey redisKey;
     private final ClientKeyResolver clientKeyResolver;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     protected void doFilterInternal(
@@ -33,25 +37,22 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain chain
     ) throws IOException, ServletException {
-        String path = request.getRequestURI();
+
+        String clientKey = clientKeyResolver.resolve(request);
+
         String baseKey = redisKey.base(
                 request.getMethod(),
-                path,
-                clientKeyResolver.resolve(request)
+                request.getRequestURI(),
+                clientKey
         );
-        try {
-            rateLimitService.checkAndConsume(
-                    baseKey,
-                    RateLimitType.ATTEMPTS,
-                    Duration.ofMinutes(RateLimitType.TIME_TO_LIVE)
-            );
 
-            chain.doFilter(request, response);
+        boolean allowed = rateLimitService.checkAndConsume(
+                baseKey,
+                RateLimitType.ATTEMPTS,
+                Duration.ofMinutes(RateLimitType.TIME_TO_LIVE)
+        );
 
-        } catch (AppException ex) {
-            response.setStatus(429);
-            response.setContentType("application/json");
-
+        if (!allowed) {
             response.setStatus(429);
             response.setContentType("application/json");
 
@@ -60,12 +61,15 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
                     .message(ErrorCode.TOO_MANY_REQUEST.getMessage())
                     .build();
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+            response.getWriter().write(
+                    objectMapper.writeValueAsString(apiResponse)
+            );
             response.flushBuffer();
+            return;
         }
+
+        chain.doFilter(request, response);
     }
 }
-
 
 

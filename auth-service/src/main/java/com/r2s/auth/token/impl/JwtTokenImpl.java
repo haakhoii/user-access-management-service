@@ -36,10 +36,10 @@ public class JwtTokenImpl implements JwtToken {
     @Override
     public TokenResponse generateToken(User user) {
         try {
-            String role = user.getRoles()
-                    .stream()
-                    .map(Role::getName)
-                    .collect(Collectors.joining(" "));
+//            String role = user.getRoles()
+//                    .stream()
+//                    .map(Role::getName)
+//                    .collect(Collectors.joining(" "));
 
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -70,9 +70,5 @@ public class JwtTokenImpl implements JwtToken {
         }
     }
 
-    @Override
-    public Jwt verify(String token) {
-        return jwtDecoder.decode(token);
-    }
 }
 
