@@ -6,16 +6,12 @@ import com.r2s.auth.domain.rateLimit.RateLimitRedisKey;
 import com.r2s.auth.domain.rateLimit.RateLimitService;
 import com.r2s.core.constants.RateLimitType;
 import com.r2s.core.dto.ApiResponse;
-import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
