@@ -63,12 +63,10 @@ public class UserServiceUnitTest {
                 .password("pass")
                 .role(null)
                 .build();
-
-        Role userRole = new Role();
-        userRole.setName(RoleConstants.ROLE_USER);
-
+        Role userRole = Role.builder()
+                .name(RoleConstants.ROLE_USER)
+                .build();
         User user = new User();
-
         when(passwordEncoder.encode("pass")).thenReturn("encoded");
         when(userRoleRepository.findByName(RoleConstants.ROLE_USER))
                 .thenReturn(Optional.of(userRole));
@@ -106,13 +104,10 @@ public class UserServiceUnitTest {
                 .password("pass")
                 .role("ADMIN")
                 .build();
-
         when(userRoleRepository.findByName(RoleConstants.ROLE_USER))
                 .thenThrow(new AppException(ErrorCode.ROLE_NOT_FOUND));
-
         AppException ex = assertThrows(AppException.class,
                 () -> userService.register(request));
-
         assertEquals(ErrorCode.ROLE_NOT_FOUND, ex.getErrorCode());
     }
 
@@ -126,11 +121,9 @@ public class UserServiceUnitTest {
                 .id(userId)
                 .roles(Set.of(role))
                 .build();
-
         when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         UserResponse response = userService.getMe();
-
         assertNotNull(response);
         assertEquals(userId, response.getId());
         assertTrue(response.getRoles().contains(RoleConstants.ROLE_USER));
@@ -139,13 +132,10 @@ public class UserServiceUnitTest {
     @Test
     void getMe_userNotFound_throwException() {
         UUID userId = UUID.randomUUID();
-
         when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
         AppException ex = assertThrows(AppException.class,
                 () -> userService.getMe());
-
         assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
     }
 }

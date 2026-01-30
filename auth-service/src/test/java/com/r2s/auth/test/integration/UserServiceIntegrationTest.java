@@ -55,9 +55,7 @@ class UserServiceIntegrationTest {
                 .password("password")
                 .role("")
                 .build();
-
         String result = userService.register(request);
-
         assertThat(result).contains("User created");
     }
 
@@ -68,26 +66,21 @@ class UserServiceIntegrationTest {
                 .password("password")
                 .role("")
                 .build();
-
         userService.register(request);
-
         AppException ex = assertThrows(
                 AppException.class,
                 () -> userService.register(request)
         );
-
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.USER_EXISTS);
     }
 
     @Test
     void getMe_unauthorized_throwException() {
         SecurityContextHolder.clearContext();
-
         AppException ex = assertThrows(
                 AppException.class,
                 () -> userService.getMe()
         );
-
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
     }
 }

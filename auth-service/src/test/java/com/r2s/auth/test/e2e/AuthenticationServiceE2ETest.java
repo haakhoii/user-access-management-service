@@ -54,7 +54,6 @@ class AuthenticationServiceE2ETest {
                 .password("password")
                 .role("")
                 .build();
-
         ResponseEntity<ApiResponse<String>> registerRes =
                 restTemplate.exchange(
                         "/register",
@@ -62,7 +61,6 @@ class AuthenticationServiceE2ETest {
                         new HttpEntity<>(registerRequest),
                         new ParameterizedTypeReference<>() {}
                 );
-
         assertThat(registerRes.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 //        login
@@ -70,7 +68,6 @@ class AuthenticationServiceE2ETest {
                 .username("e2e_user")
                 .password("password")
                 .build();
-
         ResponseEntity<ApiResponse<TokenResponse>> loginRes =
                 restTemplate.exchange(
                         "/login",
@@ -78,21 +75,16 @@ class AuthenticationServiceE2ETest {
                         new HttpEntity<>(loginRequest),
                         new ParameterizedTypeReference<>() {}
                 );
-
         assertThat(loginRes.getStatusCode()).isEqualTo(HttpStatus.OK);
-
         TokenResponse token = loginRes.getBody().getResult();
         assertThat(token).isNotNull();
         assertThat(token.getToken()).isNotBlank();
-
         String bearerToken = "Bearer " + token.getToken();
 
 //        introspect
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, bearerToken);
-
         HttpEntity<Void> authEntity = new HttpEntity<>(headers);
-
         ResponseEntity<ApiResponse<IntrospectResponse>> introspectRes =
                 restTemplate.exchange(
                         "/introspect",
@@ -100,11 +92,8 @@ class AuthenticationServiceE2ETest {
                         authEntity,
                         new ParameterizedTypeReference<>() {}
                 );
-
         assertThat(introspectRes.getStatusCode()).isEqualTo(HttpStatus.OK);
-
         IntrospectResponse introspect = introspectRes.getBody().getResult();
-
         assertThat(introspect.getUsername()).isEqualTo("e2e_user");
 
 //        get me
@@ -115,9 +104,7 @@ class AuthenticationServiceE2ETest {
                         authEntity,
                         new ParameterizedTypeReference<>() {}
                 );
-
         assertThat(meRes.getStatusCode()).isEqualTo(HttpStatus.OK);
-
         UserResponse me = meRes.getBody().getResult();
         assertThat(me.getUsername()).isEqualTo("e2e_user");
     }

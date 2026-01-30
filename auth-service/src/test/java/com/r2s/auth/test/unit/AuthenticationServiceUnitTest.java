@@ -50,18 +50,13 @@ public class AuthenticationServiceUnitTest {
                 .username("user")
                 .password("password")
                 .build();
-
         User user = new User();
-
         TokenResponse tokenResponse = TokenResponse.builder()
                 .token("jwt-token")
                 .build();
-
         when(authenticationValidation.validateLogin(request)).thenReturn(user);
         when(jwtToken.generateToken(user)).thenReturn(tokenResponse);
-
         TokenResponse result = authenticationService.login(request);
-
         assertNotNull(result);
         assertEquals("jwt-token", result.getToken());
         verify(authenticationValidation).validateLogin(request);
@@ -74,13 +69,10 @@ public class AuthenticationServiceUnitTest {
                 .username("user")
                 .password("wrong")
                 .build();
-
         when(authenticationValidation.validateLogin(request))
                 .thenThrow(new AppException(ErrorCode.PASSWORD_INVALID));
-
         AppException ex = assertThrows(AppException.class,
                 () -> authenticationService.login(request));
-
         assertEquals(ErrorCode.PASSWORD_INVALID, ex.getErrorCode());
     }
 
@@ -94,12 +86,9 @@ public class AuthenticationServiceUnitTest {
                 .id(userId)
                 .roles(Set.of(role))
                 .build();
-
         when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-
         IntrospectResponse response = authenticationService.introspect();
-
         assertNotNull(response);
         verify(userRepository).findById(userId);
     }
@@ -107,13 +96,10 @@ public class AuthenticationServiceUnitTest {
     @Test
     void introspect_userNotFound_throwException() {
         UUID userId = UUID.randomUUID();
-
         when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
         AppException ex = assertThrows(AppException.class,
                 () -> authenticationService.introspect());
-
         assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
     }
 }

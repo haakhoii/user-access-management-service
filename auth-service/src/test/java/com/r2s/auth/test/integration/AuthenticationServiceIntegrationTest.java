@@ -58,14 +58,11 @@ class AuthenticationServiceIntegrationTest {
                         .role("")
                         .build()
         );
-
         LoginRequest request = LoginRequest.builder()
                 .username("auth_user")
                 .password("password")
                 .build();
-
         TokenResponse response = authenticationService.login(request);
-
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isNotBlank();
     }
@@ -79,17 +76,14 @@ class AuthenticationServiceIntegrationTest {
                         .role("")
                         .build()
         );
-
         LoginRequest request = LoginRequest.builder()
                 .username("auth_fail")
                 .password("wrong-password")
                 .build();
-
         AppException ex = assertThrows(
                 AppException.class,
                 () -> authenticationService.login(request)
         );
-
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_INVALID);
     }
 
@@ -99,7 +93,6 @@ class AuthenticationServiceIntegrationTest {
                 AppException.class,
                 () -> authenticationService.introspect()
         );
-
         assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
     }
 }
