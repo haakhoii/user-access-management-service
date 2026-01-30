@@ -21,6 +21,14 @@ services:
       - "6379:6379"
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus-user-system
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
 
   auth-service:
     build:
@@ -39,6 +47,9 @@ services:
       JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      LOG_PATH: ${LOG_PATH}/auth
+    volumes:
+      - ./logs/auth:/logs/auth
     restart: unless-stopped
 
   user-service:
@@ -55,6 +66,9 @@ services:
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
+      LOG_PATH: ${LOG_PATH}/user
+    volumes:
+      - ./logs/user:/logs/user
     restart: unless-stopped
 
 volumes:

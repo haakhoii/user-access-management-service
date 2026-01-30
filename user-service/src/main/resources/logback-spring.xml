@@ -1,57 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="user_service" value="user-service"/>
-
-    <property name="LOG_PATH"
-              value="D:/workspace/springboot/user-access-management-service/logs/${user_service}"/>
+    <!-- ========= ENV ========= -->
+    <property name="SERVICE_NAME" value="user-service"/>
+    <property name="LOG_PATH" value="${LOG_PATH:-./logs/${SERVICE_NAME}}"/>
 
     <property name="LOG_PATTERN"
-              value="%n%d{yyyy-MM-dd HH:mm:ss}%n[%thread] [%X{service}] %-5level %logger{40}%n→ %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
 
-    <appender name="INFO_FILE"
-              class="ch.qos.logback.core.FileAppender">
+    <!-- ========= CONSOLE (CI/CD, Docker, K8s) ========= -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="INFO_FILE" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-info.log</file>
         <append>false</append>
-
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>INFO</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <appender name="ERROR_FILE"
-              class="ch.qos.logback.core.FileAppender">
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-error.log</file>
         <append>false</append>
-
-        <filter class="ch.qos.logback.classic.filter.LevelFilter">
-            <level>ERROR</level>
-            <onMatch>ACCEPT</onMatch>
-            <onMismatch>DENY</onMismatch>
-        </filter>
-
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+
+    <!-- ========= NOISE ========= -->
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.flywaydb" level="WARN"/>
-    <logger name="org.apache.catalina" level="WARN"/>
 
+    <!-- ========= APP ========= -->
     <logger name="com.r2s" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="ERROR_FILE"/>
     </logger>
 
     <root level="ERROR">
+        <appender-ref ref="CONSOLE"/>
         <appender-ref ref="ERROR_FILE"/>
     </root>
 

@@ -33,6 +33,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public TokenResponse login(LoginRequest request) {
         User user = authenticationValidation.validateLogin(request);
+        log.info("Login success with username: {}", request.getUsername());
         return jwtToken.generateToken(user);
     }
 
@@ -42,7 +43,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
-        log.info("Get user successfully: userId={}", userId);
         return UserMapper.toIntrospectResponse(user);
     }
 
