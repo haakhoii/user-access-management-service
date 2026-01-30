@@ -36,11 +36,6 @@ public class JwtTokenImpl implements JwtToken {
     @Override
     public TokenResponse generateToken(User user) {
         try {
-//            String role = user.getRoles()
-//                    .stream()
-//                    .map(Role::getName)
-//                    .collect(Collectors.joining(" "));
-
             JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
             JWTClaimsSet claims = new JWTClaimsSet.Builder()
                     .subject(user.getId().toString())
