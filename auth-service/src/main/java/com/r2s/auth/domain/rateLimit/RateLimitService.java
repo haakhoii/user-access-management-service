@@ -12,6 +12,7 @@ public class RateLimitService {
 
     private final RedisTemplate<String, Object> redis;
     private final RateLimitRedisKey redisKey;
+    private static final String BLOCKED = "1";
 
     public boolean checkAndConsume(String baseKey, int max, Duration ttl) {
         if (Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)))) {
@@ -24,7 +25,7 @@ public class RateLimitService {
         if (count != null && count > max) {
             redis.opsForValue().set(
                     redisKey.blocked(baseKey),
-                    "1",
+                    BLOCKED,
                     ttl
             );
             return false;

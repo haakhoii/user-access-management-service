@@ -44,8 +44,8 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
 
         boolean allowed = rateLimitService.checkAndConsume(
                 baseKey,
-                RateLimitType.ATTEMPTS,
-                Duration.ofMinutes(RateLimitType.TIME_TO_LIVE)
+                RateLimitType.MAX_ATTEMPTS,
+                Duration.ofMinutes(RateLimitType.TTL_SPAM_REQUEST)
         );
 
         if (!allowed) {

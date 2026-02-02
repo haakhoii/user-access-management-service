@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
-    <!-- ========= ENV ========= -->
     <property name="SERVICE_NAME" value="auth-service"/>
     <property name="LOG_PATH" value="${LOG_PATH:-./logs/${SERVICE_NAME}}"/>
 
     <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
 
-    <!-- ========= CONSOLE (CI/CD, Docker, K8s) ========= -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
@@ -31,13 +28,10 @@
         </encoder>
     </appender>
 
-
-    <!-- ========= NOISE ========= -->
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.flywaydb" level="WARN"/>
 
-    <!-- ========= APP ========= -->
     <logger name="com.r2s" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="INFO_FILE"/>
