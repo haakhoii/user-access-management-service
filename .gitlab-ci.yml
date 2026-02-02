@@ -3,7 +3,7 @@ image: maven:3.9.6-eclipse-temurin-21
 stages:
   - build
   - test
-  - deploy
+  - docker
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -16,8 +16,7 @@ cache:
 
 build-job:
   stage: build
-  tags:
-    - local
+  tags: [local]
   script:
     - chmod +x mvnw
     - ./mvnw clean install -DskipTests
@@ -30,22 +29,23 @@ build-job:
 
 test-job:
   stage: test
-  tags:
-    - local
+  tags: [local]
   script:
     - chmod +x mvnw
     - ./mvnw install -pl core-service -am -DskipTests
     - ./mvnw test -pl auth-service
     - ./mvnw test -pl user-service
 
-deploy-job:
-  stage: deploy
-  tags:
-    - local
-  only:
-    - main
+docker-build:
+  stage: docker
+  image: docker:24.0.5
+  services:
+    - name: docker:24.0.5-dind
+      command: ["--tls=false"]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
   script:
-    - docker compose version
-    - docker compose down
-    - docker compose build
-    - docker compose up -d
+    - docker version
+    - docker build -t auth-service:latest ./auth-service
+    - docker build -t user-service:latest ./user-service
