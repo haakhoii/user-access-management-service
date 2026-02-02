@@ -1,9 +1,5 @@
 image: maven:3.9.6-eclipse-temurin-21
 
-services:
-  - name: docker:24.0.5-dind
-    command: ["--tls=false"]
-
 stages:
   - build
   - test
@@ -12,10 +8,6 @@ stages:
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
   SPRING_PROFILES_ACTIVE: test
-  DOCKER_HOST: tcp://docker:2375
-  DOCKER_TLS_CERTDIR: ""
-  TESTCONTAINERS_RYUK_DISABLED: "true"
-  TESTCONTAINERS_CHECKS_DISABLE: "true"
 
 cache:
   key: maven-cache
@@ -24,7 +16,8 @@ cache:
 
 build-job:
   stage: build
-  tags: [local]
+  tags:
+    - local
   script:
     - chmod +x mvnw
     - ./mvnw clean install -DskipTests
@@ -37,18 +30,22 @@ build-job:
 
 test-job:
   stage: test
-  tags: [local]
-  before_script:
-    - chmod +x mvnw
+  tags:
+    - local
   script:
+    - chmod +x mvnw
     - ./mvnw install -pl core-service -am -DskipTests
-    - ./mvnw test -pl auth-service -Dspring.profiles.active=test
-    - ./mvnw test -pl user-service -Dspring.profiles.active=test
+    - ./mvnw test -pl auth-service
+    - ./mvnw test -pl user-service
 
 deploy-job:
   stage: deploy
-  tags: [local]
+  tags:
+    - local
   only:
     - main
   script:
-    - echo "Deploy via docker-compose (manual / local runner)"
+    - echo "Deploying application using docker-compose"
+    - docker compose down
+    - docker compose build
+    - docker compose up -d
