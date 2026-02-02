@@ -40,12 +40,24 @@ test-job:
 
 deploy-job:
   stage: deploy
+  image: docker:24.0.5
+  services:
+    - name: docker:24.0.5-dind
+      command: ["--tls=false"]
+
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+
   tags:
     - local
   only:
     - main
+
   script:
-    - echo "Deploying application using docker-compose"
+    - docker version
+    - docker compose version
     - docker compose down
     - docker compose build
     - docker compose up -d
+
