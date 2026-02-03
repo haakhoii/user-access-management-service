@@ -58,13 +58,6 @@
                 <spring.profiles.active>test</spring.profiles.active>
             </properties>
         </profile>
-
-        <profile>
-            <id>ci</id>
-            <properties>
-                <spring.profiles.active>ci</spring.profiles.active>
-            </properties>
-        </profile>
     </profiles>
 
     <!-- PLUGIN MANAGEMENT -->

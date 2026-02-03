@@ -42,9 +42,10 @@ public class HmacJwtDecoder implements JwtDecoder {
                     signedJWT.getHeader().toJSONObject(),
                     signedJWT.getJWTClaimsSet().getClaims()
             );
-
+        } catch (JwtException ex) {
+            throw ex;
         } catch (Exception e) {
-            throw new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
     }
 }

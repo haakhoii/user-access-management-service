@@ -3,7 +3,7 @@ image: maven:3.9.6-eclipse-temurin-21
 stages:
   - build
   - test
-  - docker
+  - deploy
 
 variables:
   MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
@@ -37,7 +37,7 @@ test-job:
     - ./mvnw test -pl user-service
 
 docker-build:
-  stage: docker
+  stage: deploy
   image: docker:24.0.5
   services:
     - name: docker:24.0.5-dind
