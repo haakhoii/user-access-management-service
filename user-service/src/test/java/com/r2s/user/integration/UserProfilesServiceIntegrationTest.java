@@ -152,7 +152,7 @@ class UserProfilesServiceIntegrationTest {
                 UserProfiles.builder()
                         .userId(UUID.randomUUID())
                         .username("u1")
-                        .roles(new ArrayList<>(List.of("ROLE_USER"))) // ✅ FIX
+                        .roles(new ArrayList<>(List.of("ROLE_USER")))
                         .build()
         );
 
