@@ -14,7 +14,7 @@ public class RateLimitService {
     private final RateLimitRedisKey redisKey;
     private static final String BLOCKED = "1";
 
-    public boolean checkAndConsume(String baseKey, int max, Duration ttl) {
+    public boolean checkAndConsume(String baseKey, int max, Duration ttl, Duration block) {
         if (Boolean.TRUE.equals(redis.hasKey(redisKey.blocked(baseKey)))) {
             return false;
         }
@@ -26,7 +26,7 @@ public class RateLimitService {
             redis.opsForValue().set(
                     redisKey.blocked(baseKey),
                     BLOCKED,
-                    ttl
+                    block
             );
             return false;
         }
