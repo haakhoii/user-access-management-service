@@ -28,7 +28,7 @@ public class UserProfilesController {
         return "hello from user service";
     }
 
-    @PostMapping("/create")
+    @PostMapping("/me")
     ApiResponse<UserProfileResponse> create(@Valid @RequestBody UserCreatedRequest request) {
         log.info("User profile created request: {}", request);
         return ApiResponse.<UserProfileResponse>builder()
@@ -56,7 +56,7 @@ public class UserProfilesController {
                 .build();
     }
 
-    @PutMapping("/update")
+    @PutMapping("/me")
     ApiResponse<UserProfileResponse> update(@Valid @RequestBody UserUpdatedRequest request) {
         log.info("Update profile request: {}", request);
         return ApiResponse.<UserProfileResponse>builder()
