@@ -12,6 +12,11 @@ services:
       - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   redis:
@@ -40,11 +45,13 @@ services:
       - postgres
       - redis
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: docker
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_PORT}
       SPRING_DATASOURCE_URL: ${AUTH_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
+      JWT_EXPIRY: ${JWT_EXPIRY}
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
       LOG_PATH: ${LOG_PATH}/auth
@@ -61,11 +68,13 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_PROFILES_ACTIVE: docker
+      USER_SERVICE_PORT: ${USER_SERVICE_PORT}
       SPRING_DATASOURCE_URL: ${USER_DATASOURCE_URL}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
+      JWT_EXPIRY: ${JWT_EXPIRY}
       LOG_PATH: ${LOG_PATH}/user
     volumes:
       - ./logs/user:/logs/user

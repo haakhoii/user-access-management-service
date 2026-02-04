@@ -3,7 +3,8 @@ spring:
     name: user-service
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
+  expiry: ${JWT_EXPIRY}

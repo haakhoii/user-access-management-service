@@ -3,8 +3,8 @@ spring:
     name: auth-service
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  expiry: 15
+  expiry: ${JWT_EXPIRY}
