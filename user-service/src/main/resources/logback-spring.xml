@@ -1,17 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+
+    <!-- SERVICE -->
     <property name="SERVICE_NAME" value="user-service"/>
-    <property name="LOG_PATH" value="${LOG_PATH:-./logs/${SERVICE_NAME}}"/>
+
+    <!-- LOG PATH: LUÔN CỤ THỂ -->
+    <property name="LOG_PATH" value="./logs/${SERVICE_NAME}"/>
 
     <property name="LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
 
+    <!-- CONSOLE -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+    <!-- INFO FILE -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-info.log</file>
         <append>false</append>
@@ -20,6 +26,7 @@
         </encoder>
     </appender>
 
+    <!-- ERROR FILE -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
         <file>${LOG_PATH}/app-error.log</file>
         <append>false</append>
@@ -28,19 +35,21 @@
         </encoder>
     </appender>
 
+    <!-- FRAMEWORK -->
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.flywaydb" level="WARN"/>
 
+    <!-- APP ONLY -->
     <logger name="com.r2s" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="ERROR_FILE"/>
     </logger>
 
+    <!-- ROOT: CONSOLE ONLY -->
     <root level="ERROR">
         <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="ERROR_FILE"/>
     </root>
 
 </configuration>

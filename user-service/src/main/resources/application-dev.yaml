@@ -4,9 +4,6 @@ server:
     context-path: /user
 
 spring:
-  config:
-    activate:
-      on-profile: ${SPRING_PROFILES_ACTIVE:dev}
 
   datasource:
     driver-class-name: org.postgresql.Driver
