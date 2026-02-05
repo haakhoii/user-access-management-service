@@ -11,7 +11,7 @@ Mục tiêu: bảng nghiệm thu **ready-to-copy** theo mức độ **CRITICAL /
 
 ---
 
-## 🔴 CRITICAL (Phải fix ngay)
+## CRITICAL (Phải fix ngay)
 
 
 | Hạng mục (theo review)                                         | Pass/Fail                                           | Bằng chứng / file liên quan                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -24,7 +24,7 @@ Mục tiêu: bảng nghiệm thu **ready-to-copy** theo mức độ **CRITICAL /
 
 ---
 
-## 🟡 HIGH (Nên fix sớm)
+## HIGH (Nên fix sớm)
 
 
 | Hạng mục (theo review)                              | Pass/Fail                                                           | Bằng chứng / file liên quan                                                                                                                                                                                                                                                                                                                |
@@ -37,7 +37,7 @@ Mục tiêu: bảng nghiệm thu **ready-to-copy** theo mức độ **CRITICAL /
 
 ---
 
-## 🟢 MEDIUM (Cải thiện dần)
+## MEDIUM (Cải thiện dần)
 
 
 | Hạng mục (theo review)                                         | Pass/Fail                                    | Bằng chứng / file liên quan                                                                                                                                                                                                                                         |
