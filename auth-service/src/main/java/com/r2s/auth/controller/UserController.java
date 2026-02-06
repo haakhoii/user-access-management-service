@@ -32,24 +32,7 @@ public class UserController {
                 .build();
     }
 
-    @PostMapping("/login")
-    ApiResponse<TokenResponse> login(
-            @Valid @RequestBody LoginRequest request
-    ) {
-        log.info("Login attempt with username: {}", request.getUsername());
 
-        return ApiResponse.<TokenResponse>builder()
-                .result(authenticationService.login(request))
-                .build();
-    }
-
-    @PostMapping("/introspect")
-    ApiResponse<IntrospectResponse> introspect() {
-        log.info("Introspect token request");
-        return ApiResponse.<IntrospectResponse>builder()
-                .result(authenticationService.introspect())
-                .build();
-    }
 
     @GetMapping("/me")
     ApiResponse<UserResponse> me() {

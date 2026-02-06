@@ -6,6 +6,7 @@ import com.r2s.auth.entity.User;
 import com.r2s.auth.mapper.UserMapper;
 import com.r2s.auth.repository.UserRepository;
 import com.r2s.auth.service.AuthenticationService;
+import com.r2s.auth.service.UserQueryService;
 import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.response.IntrospectResponse;
@@ -25,25 +26,23 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
-    JwtToken jwtToken;
+
     AuthenticationValidation authenticationValidation;
+    JwtToken jwtToken;
     SecurityContextHelper securityContextHelper;
-    UserRepository userRepository;
+    UserQueryService userQueryService;
 
     @Override
     public TokenResponse login(LoginRequest request) {
         User user = authenticationValidation.validateLogin(request);
-        log.info("Login success with username: {}", request.getUsername());
+        log.info("Login success username: {}", user.getUsername());
         return jwtToken.generateToken(user);
     }
 
     @Override
     public IntrospectResponse introspect() {
         UUID userId = securityContextHelper.getCurrentUserId();
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
+        User user = userQueryService.getById(userId);
         return UserMapper.toIntrospectResponse(user);
     }
-
 }
