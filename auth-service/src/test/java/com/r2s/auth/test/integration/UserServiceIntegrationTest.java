@@ -17,6 +17,8 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -40,6 +42,10 @@ class UserServiceIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        registry.add("jwt.signerKey", () ->
+                UUID.randomUUID().toString().repeat(4)
+        );
+        registry.add("jwt.expiry", () -> "15");
     }
 
     @Autowired

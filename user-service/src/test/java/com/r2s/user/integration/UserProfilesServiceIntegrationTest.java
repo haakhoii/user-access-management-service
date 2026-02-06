@@ -49,6 +49,10 @@ class UserProfilesServiceIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+        registry.add("jwt.signerKey", () ->
+                UUID.randomUUID().toString().repeat(4)
+        );
+        registry.add("jwt.expiry", () -> "15");
     }
 
     @Autowired

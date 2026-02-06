@@ -19,12 +19,29 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @Testcontainers
 class AuthenticationServiceE2ETest {
+    private static final String TEST_JWT_SIGNER_KEY = generateHs512Key();
+
+    private static String generateHs512Key() {
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA512");
+            keyGenerator.init(512);
+            SecretKey secretKey = keyGenerator.generateKey();
+            return Base64.getEncoder().encodeToString(secretKey.getEncoded());
+        } catch (Exception e) {
+            throw new IllegalStateException("Cannot generate HS512 key for test", e);
+        }
+    }
 
     @Container
     static PostgreSQLContainer<?> postgres =
@@ -38,9 +55,11 @@ class AuthenticationServiceE2ETest {
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
-
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
+
+        registry.add("jwt.signerKey", () -> TEST_JWT_SIGNER_KEY);
+        registry.add("jwt.expiry", () -> "15");
     }
 
     @Autowired
