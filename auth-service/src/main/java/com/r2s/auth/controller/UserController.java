@@ -6,8 +6,6 @@ import com.r2s.core.dto.ApiResponse;
 import com.r2s.core.dto.request.IntrospectRequest;
 import com.r2s.core.dto.request.LoginRequest;
 import com.r2s.core.dto.request.RegisterRequest;
-import com.r2s.core.dto.response.TokenResponse;
-import com.r2s.core.dto.response.IntrospectResponse;
 import com.r2s.core.dto.response.UserResponse;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -22,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class UserController {
     UserService userService;
-    AuthenticationService authenticationService;
 
     @PostMapping("/register")
     ApiResponse<String> register(@Valid @RequestBody RegisterRequest request) {
@@ -31,8 +28,6 @@ public class UserController {
                 .result(userService.register(request))
                 .build();
     }
-
-
 
     @GetMapping("/me")
     ApiResponse<UserResponse> me() {

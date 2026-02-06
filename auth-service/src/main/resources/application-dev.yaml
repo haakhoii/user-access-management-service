@@ -1,7 +1,5 @@
 server:
   port: ${AUTH_SERVICE_PORT}
-  servlet:
-    context-path: /auth
 
 spring:
   datasource:

@@ -32,6 +32,8 @@ public class SecurityConfig {
             "/actuator/**"
     };
 
+
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(SecurityConstants.BCRYPT_STRENGTH);

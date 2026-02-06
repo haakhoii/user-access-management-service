@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -33,6 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     UserQueryService userQueryService;
 
     @Override
+    @Transactional
     public TokenResponse login(LoginRequest request) {
         User user = authenticationValidation.validateLogin(request);
         log.info("Login success username: {}", user.getUsername());
@@ -40,6 +42,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public IntrospectResponse introspect() {
         UUID userId = securityContextHelper.getCurrentUserId();
         User user = userQueryService.getById(userId);

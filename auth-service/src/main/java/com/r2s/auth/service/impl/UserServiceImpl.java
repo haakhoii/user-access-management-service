@@ -1,7 +1,6 @@
 package com.r2s.auth.service.impl;
 
 import com.r2s.auth.domain.helper.SecurityContextHelper;
-import com.r2s.auth.domain.role.RoleNormalizerResolver;
 import com.r2s.auth.domain.role.UserRoleAssigner;
 import com.r2s.auth.domain.validation.user.UserValidation;
 import com.r2s.auth.entity.Role;
@@ -9,14 +8,10 @@ import com.r2s.auth.entity.User;
 import com.r2s.auth.domain.factory.UserFactory;
 import com.r2s.auth.mapper.UserMapper;
 import com.r2s.auth.repository.UserRepository;
-import com.r2s.auth.repository.UserRoleRepository;
 import com.r2s.auth.service.UserQueryService;
 import com.r2s.auth.service.UserService;
-import com.r2s.core.constants.RoleConstants;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.UserResponse;
-import com.r2s.core.exception.AppException;
-import com.r2s.core.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -57,6 +52,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResponse getMe() {
         UUID userId = securityContextHelper.getCurrentUserId();
         User user = userQueryService.getById(userId);
