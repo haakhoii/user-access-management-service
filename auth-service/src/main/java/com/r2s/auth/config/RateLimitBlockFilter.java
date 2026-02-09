@@ -28,6 +28,15 @@ public class RateLimitBlockFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        return uri.startsWith("/api/v1/auth/swagger-ui")
+                || uri.startsWith("/api/v1/auth/v3/api-docs")
+                || uri.startsWith("/api/v1/auth/actuator");
+    }
+
+    @Override
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
