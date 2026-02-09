@@ -22,11 +22,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.util.Base64;
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+        properties = "SPRING_PROFILES_ACTIVE=test",
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+)
 @ActiveProfiles("test")
 @Testcontainers
 class AuthenticationServiceE2ETest {
@@ -126,5 +128,75 @@ class AuthenticationServiceE2ETest {
         assertThat(meRes.getStatusCode()).isEqualTo(HttpStatus.OK);
         UserResponse me = meRes.getBody().getResult();
         assertThat(me.getUsername()).isEqualTo("e2e_user");
+    }
+
+    @Test
+    void introspect_invalidBearerToken_returnUnauthorized() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer invalid.jwt.token");
+
+        ResponseEntity<ApiResponse<?>> response =
+                restTemplate.exchange(
+                        "/introspect",
+                        HttpMethod.POST,
+                        new HttpEntity<>(headers),
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void introspect_missingAuthorizationHeader_returnUnauthorized() {
+        ResponseEntity<ApiResponse<?>> response =
+                restTemplate.exchange(
+                        "/introspect",
+                        HttpMethod.POST,
+                        null,
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void adminEndpoint_userRole_forbidden() {
+//        register
+        RegisterRequest registerRequest = RegisterRequest.builder()
+                .username("user_only")
+                .password("password")
+                .role("")
+                .build();
+
+        restTemplate.postForEntity("/register", registerRequest, ApiResponse.class);
+
+//        login
+        LoginRequest loginRequest = LoginRequest.builder()
+                .username("user_only")
+                .password("password")
+                .build();
+
+        ResponseEntity<ApiResponse<TokenResponse>> loginRes =
+                restTemplate.exchange(
+                        "/login",
+                        HttpMethod.POST,
+                        new HttpEntity<>(loginRequest),
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        String token = "Bearer " + loginRes.getBody().getResult().getToken();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.AUTHORIZATION, token);
+
+        ResponseEntity<ApiResponse<?>> response =
+                restTemplate.exchange(
+                        "/admin/users",
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        new ParameterizedTypeReference<>() {}
+                );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

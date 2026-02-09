@@ -7,7 +7,7 @@ spring:
     name: user-service
 
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE}
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
