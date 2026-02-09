@@ -6,6 +6,8 @@ import com.r2s.core.dto.request.UserUpdatedRequest;
 import com.r2s.core.dto.response.PageResponse;
 import com.r2s.core.dto.response.UserProfileResponse;
 import com.r2s.user.service.UserProfilesService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @Slf4j
+@Tag(
+        name = "User profile",
+        description = "CRUD user profile"
+)
 public class UserProfilesController {
     UserProfilesService userProfilesService;
 
@@ -28,6 +34,10 @@ public class UserProfilesController {
         return "hello from user service";
     }
 
+    @Operation(
+            summary = "Create profile",
+            description = "Create profile with dto request"
+    )
     @PostMapping("/me")
     ApiResponse<UserProfileResponse> create(@Valid @RequestBody UserCreatedRequest request) {
         log.info("User profile created request: {}", request);
@@ -36,6 +46,10 @@ public class UserProfilesController {
                 .build();
     }
 
+    @Operation(
+            summary = "Get list profiles",
+            description = "Get list profiles with page and size"
+    )
     @GetMapping("/list")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     ApiResponse<PageResponse<UserProfileResponse>> getList(
@@ -48,6 +62,10 @@ public class UserProfilesController {
                 .build();
     }
 
+    @Operation(
+            summary = "Get profile",
+            description = "Get profile by token"
+    )
     @GetMapping("/me")
     ApiResponse<UserProfileResponse> getMe() {
         log.info("Get my profile request");
@@ -56,6 +74,10 @@ public class UserProfilesController {
                 .build();
     }
 
+    @Operation(
+            summary = "Update profile",
+            description = "Update profile with dto request"
+    )
     @PutMapping("/me")
     ApiResponse<UserProfileResponse> update(@Valid @RequestBody UserUpdatedRequest request) {
         log.info("Update profile request: {}", request);
@@ -64,6 +86,10 @@ public class UserProfilesController {
                 .build();
     }
 
+    @Operation(
+            summary = "Delete profile",
+            description = "Delete profile with user id"
+    )
     @DeleteMapping("/delete/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     ApiResponse<String> delete(@PathVariable("id") UUID id) {
