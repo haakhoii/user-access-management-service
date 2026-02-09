@@ -25,6 +25,7 @@ public class SecurityConfig {
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final RateLimitBlockFilter rateLimitBlockFilter;
+    private final MdcFilter mdcFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
             "/register",
@@ -50,6 +51,7 @@ public class SecurityConfig {
                         rateLimitBlockFilter,
                         BearerTokenAuthenticationFilter.class
                 )
+                .addFilterBefore(mdcFilter, RateLimitBlockFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .anyRequest().authenticated()

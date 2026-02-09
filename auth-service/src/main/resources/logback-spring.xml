@@ -1,38 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <property name="SERVICE_NAME" value="auth-service"/>
-    <property name="LOG_PATH" value="./logs/${SERVICE_NAME}"/>
+
+    <!-- ===== SPRING CONTEXT ===== -->
+    <springProperty scope="context" name="LOG_ROOT" source="LOG_PATH"/>
+    <springProperty scope="context" name="SPRING_PROFILE" source="spring.profiles.active"/>
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name"/>
+
+    <!-- ===== FALLBACK ===== -->
+    <property name="LOG_ROOT" value="${LOG_ROOT:-./logs}"/>
+    <property name="SPRING_PROFILE" value="${SPRING_PROFILE:-local}"/>
+    <property name="APP_NAME" value="${APP_NAME:-auth-service}"/>
+
+    <!-- ===== FINAL PATH ===== -->
+    <property name="LOG_PATH" value="${LOG_ROOT}/${APP_NAME}/${SPRING_PROFILE}"/>
 
     <property name="LOG_PATTERN"
-              value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"/>
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36}
+              [req=%X{requestId}] [auth=%X{auth}] [method=%X{method}] [path=%X{path}] - %msg%n"/>
 
+    <!-- ===== CONSOLE ===== -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <appender name="INFO_FILE" class="ch.qos.logback.core.FileAppender">
+    <!-- ===== INFO FILE (INFO ONLY) ===== -->
+    <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/app-info.log</file>
-        <append>false</append>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>INFO</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/app-info.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.FileAppender">
+    <!-- ===== ERROR FILE (ERROR ONLY) ===== -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/app-error.log</file>
-        <append>false</append>
+
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/app-error.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
         </encoder>
     </appender>
 
+    <!-- ===== NOISE REDUCTION ===== -->
     <logger name="org.springframework" level="WARN"/>
     <logger name="org.hibernate" level="WARN"/>
     <logger name="org.flywaydb" level="WARN"/>
 
-    <logger name="com.r2s" level="INFO" additivity="false">
+    <!-- ===== APP ===== -->
+    <logger name="com.r2s.auth" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="INFO_FILE"/>
         <appender-ref ref="ERROR_FILE"/>

@@ -54,9 +54,8 @@ services:
       JWT_EXPIRY: ${JWT_EXPIRY}
       SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
       SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
-      LOG_PATH: ${LOG_PATH}/auth
     volumes:
-      - ./logs/auth:/logs/auth
+      - ./logs:/logs
     restart: unless-stopped
 
   user-service:
@@ -75,9 +74,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
       JWT_SIGNER_KEY: ${JWT_SIGNER_KEY}
       JWT_EXPIRY: ${JWT_EXPIRY}
-      LOG_PATH: ${LOG_PATH}/user
     volumes:
-      - ./logs/user:/logs/user
+      - ./logs:/logs
     restart: unless-stopped
 
 volumes:
