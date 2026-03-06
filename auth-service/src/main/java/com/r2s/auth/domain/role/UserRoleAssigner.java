@@ -19,22 +19,17 @@ public class UserRoleAssigner {
 
     UserRoleRepository roleRepository;
 
-    public Role assign(RegisterRequest request) {   // 🔥 đổi return type
-
+    public Role assign(RegisterRequest request) {
         String roleName = resolveRole(request.getRole());
-
         return roleRepository.findByName(roleName)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
     private String resolveRole(String inputRole) {
-
         if (inputRole == null || inputRole.isBlank()) {
             return RoleConstants.ROLE_USER;
         }
-
         String role = inputRole.trim().toUpperCase();
-
         if (role.startsWith("ROLE_")) {
             role = role.substring(5);
         }
