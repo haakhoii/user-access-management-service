@@ -10,30 +10,40 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
-
-import java.util.HashSet;
 import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserRoleAssigner {
+
     UserRoleRepository roleRepository;
-    RoleNormalizerResolver roleNormalizerResolver;
 
-    public Set<Role> assign(RegisterRequest request) {
-        Set<Role> roles = new HashSet<>();
-        roles.add(find(RoleConstants.ROLE_USER));
+    public Role assign(RegisterRequest request) {   // 🔥 đổi return type
 
-        String normalized = roleNormalizerResolver.normalize(request.getRole());
-        if (normalized != null) {
-            roles.add(find(normalized));
-        }
-        return roles;
+        String roleName = resolveRole(request.getRole());
+
+        return roleRepository.findByName(roleName)
+                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
-    private Role find(String role) {
-        return roleRepository.findByName(role)
-                .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
+    private String resolveRole(String inputRole) {
+
+        if (inputRole == null || inputRole.isBlank()) {
+            return RoleConstants.ROLE_USER;
+        }
+
+        String role = inputRole.trim().toUpperCase();
+
+        if (role.startsWith("ROLE_")) {
+            role = role.substring(5);
+        }
+
+        return switch (role) {
+            case "USER" -> RoleConstants.ROLE_USER;
+            case "ADMIN" -> RoleConstants.ROLE_ADMIN;
+            case "MODERATOR" -> RoleConstants.ROLE_MODERATOR;
+            default -> throw new AppException(ErrorCode.ROLE_NOT_FOUND);
+        };
     }
 }

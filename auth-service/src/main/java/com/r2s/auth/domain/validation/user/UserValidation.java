@@ -14,7 +14,13 @@ public class UserValidation {
     private final UserRepository userRepository;
 
     public void validateRegister(RegisterRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+        if (request.getUsername() == null || request.getUsername().isBlank()
+            || request.getPassword() == null || request.getPassword().isBlank()) {
+
+            throw new AppException(ErrorCode.INVALID_REQUEST);
+        }
+
+        if (userRepository.existsByUsername(request.getUsername())) {
             throw new AppException(ErrorCode.USER_EXISTS);
         }
     }

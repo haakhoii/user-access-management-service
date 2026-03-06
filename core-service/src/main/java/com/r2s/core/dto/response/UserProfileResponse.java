@@ -13,7 +13,7 @@ import java.util.List;
 public class UserProfileResponse {
     String username;
 
-    List<String> role;
+    String role;
 
     String fullName;
 

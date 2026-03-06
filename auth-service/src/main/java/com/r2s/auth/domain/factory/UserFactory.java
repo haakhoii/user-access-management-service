@@ -11,13 +11,13 @@ import java.util.Set;
 public class UserFactory {
 
     public User create(RegisterRequest request,
-                       Set<Role> roles,
+                       Role role,
                        String encodedPassword) {
 
         return User.builder()
                 .username(request.getUsername())
                 .password(encodedPassword)
-                .roles(roles)
+                .role(role)
                 .enabled(true)
                 .build();
     }

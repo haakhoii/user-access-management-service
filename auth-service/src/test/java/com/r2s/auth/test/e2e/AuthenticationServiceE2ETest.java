@@ -67,9 +67,10 @@ class AuthenticationServiceE2ETest {
     @Autowired
     TestRestTemplate restTemplate;
 
+    // happy case
     @Test
     void flow_e2e_register_login_introspect_me() {
-//        register
+        //        register
         RegisterRequest registerRequest = RegisterRequest.builder()
                 .username("e2e_user")
                 .password("password")
@@ -84,7 +85,7 @@ class AuthenticationServiceE2ETest {
                 );
         assertThat(registerRes.getStatusCode()).isEqualTo(HttpStatus.OK);
 
-//        login
+        //        login
         LoginRequest loginRequest = LoginRequest.builder()
                 .username("e2e_user")
                 .password("password")
@@ -102,7 +103,7 @@ class AuthenticationServiceE2ETest {
         assertThat(token.getToken()).isNotBlank();
         String bearerToken = "Bearer " + token.getToken();
 
-//        introspect
+        //        introspect
         HttpHeaders headers = new HttpHeaders();
         headers.set(HttpHeaders.AUTHORIZATION, bearerToken);
         HttpEntity<Void> authEntity = new HttpEntity<>(headers);
@@ -117,7 +118,7 @@ class AuthenticationServiceE2ETest {
         IntrospectResponse introspect = introspectRes.getBody().getResult();
         assertThat(introspect.getUsername()).isEqualTo("e2e_user");
 
-//        get me
+        //        get me
         ResponseEntity<ApiResponse<UserResponse>> meRes =
                 restTemplate.exchange(
                         "/me",
@@ -130,6 +131,7 @@ class AuthenticationServiceE2ETest {
         assertThat(me.getUsername()).isEqualTo("e2e_user");
     }
 
+    // negative case
     @Test
     void introspect_invalidBearerToken_returnUnauthorized() {
         HttpHeaders headers = new HttpHeaders();

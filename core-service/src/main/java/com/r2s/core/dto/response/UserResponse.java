@@ -12,5 +12,5 @@ import java.util.UUID;
 public class UserResponse {
     UUID id;
     String username;
-    Set<String> roles;
+    String role;
 }

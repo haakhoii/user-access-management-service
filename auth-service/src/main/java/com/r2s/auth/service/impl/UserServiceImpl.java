@@ -43,8 +43,8 @@ public class UserServiceImpl implements UserService {
         userValidation.validateRegister(request);
 
         String encodedPassword = passwordEncoder.encode(request.getPassword());
-        Set<Role> roles = roleAssigner.assign(request);
-        User user = userFactory.create(request, roles, encodedPassword);
+        Role role = roleAssigner.assign(request);
+        User user = userFactory.create(request, role, encodedPassword);
         userRepository.save(user);
         log.info("User registered id: {}", user.getId());
 

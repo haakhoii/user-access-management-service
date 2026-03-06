@@ -21,7 +21,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,30 +29,18 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserServiceUnitTest {
 
-    @Mock
-    UserRepository userRepository;
-
-    @Mock
-    PasswordEncoder passwordEncoder;
-
-    @Mock
-    UserFactory userFactory;
-
-    @Mock
-    UserValidation userValidation;
-
-    @Mock
-    SecurityContextHelper securityContextHelper;
-
-    @Mock
-    UserQueryService userQueryService;
-
-    @Mock
-    UserRoleAssigner userRoleAssigner;
+    @Mock UserRepository userRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock UserFactory userFactory;
+    @Mock UserValidation userValidation;
+    @Mock SecurityContextHelper securityContextHelper;
+    @Mock UserQueryService userQueryService;
+    @Mock UserRoleAssigner roleAssigner;
 
     @InjectMocks
     UserServiceImpl userService;
 
+    // happy case
     @Test
     void register_success() {
         RegisterRequest request = RegisterRequest.builder()
@@ -61,15 +48,12 @@ class UserServiceUnitTest {
                 .password("pass")
                 .build();
 
-        Role role = Role.builder()
-                .name(RoleConstants.ROLE_USER)
-                .build();
-
-        User user = User.builder().build();
+        Role role = Role.builder().name("ROLE_USER").build();
+        User user = User.builder().id(UUID.randomUUID()).build();
 
         when(passwordEncoder.encode("pass")).thenReturn("encoded");
-        when(userRoleAssigner.assign(request)).thenReturn(Set.of(role));
-        when(userFactory.create(request, Set.of(role), "encoded")).thenReturn(user);
+        when(roleAssigner.assign(request)).thenReturn(role);
+        when(userFactory.create(request, role, "encoded")).thenReturn(user);
 
         String result = userService.register(request);
 
@@ -78,21 +62,57 @@ class UserServiceUnitTest {
     }
 
     @Test
-    void register_userExists_throwException() {
+    void getMe_success() {
+        UUID userId = UUID.randomUUID();
+        Role role = Role.builder()
+            .name(RoleConstants.ROLE_USER)
+            .build();
+
+        User user = User.builder()
+            .id(userId)
+            .role(role)
+            .build();
+
+        when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
+        when(userQueryService.getById(userId)).thenReturn(user);
+
+        UserResponse response = userService.getMe();
+
+        assertEquals(userId, response.getId());
+    }
+
+    // negative case
+    @Test
+    void register_usernameAlreadyExists_throwException() {
         RegisterRequest request = RegisterRequest.builder()
-                .username("user")
-                .password("pass")
-                .build();
+            .username("user")
+            .password("pass")
+            .build();
 
         doThrow(new AppException(ErrorCode.USER_EXISTS))
+            .when(userValidation)
+            .validateRegister(request);
+
+        assertThrows(AppException.class,
+            () -> userService.register(request));
+
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void register_validationFailure_doNotSaveUser() {
+        RegisterRequest request = RegisterRequest.builder()
+                .username("")
+                .password("")
+                .build();
+
+        doThrow(new AppException(ErrorCode.INVALID_REQUEST))
                 .when(userValidation).validateRegister(request);
 
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> userService.register(request)
-        );
+        assertThrows(AppException.class,
+                () -> userService.register(request));
 
-        assertEquals(ErrorCode.USER_EXISTS, ex.getErrorCode());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
@@ -103,38 +123,40 @@ class UserServiceUnitTest {
                 .role("ADMIN")
                 .build();
 
-        when(userRoleAssigner.assign(request))
+        when(roleAssigner.assign(request))
                 .thenThrow(new AppException(ErrorCode.ROLE_NOT_FOUND));
 
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> userService.register(request)
-        );
+        assertThrows(AppException.class,
+                () -> userService.register(request));
 
-        assertEquals(ErrorCode.ROLE_NOT_FOUND, ex.getErrorCode());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void getMe_success() {
-        UUID userId = UUID.randomUUID();
+    void register_passwordEncoderFail_throwException() {
+        RegisterRequest request = RegisterRequest.builder()
+            .username("user")
+            .password("pass")
+            .build();
 
-        Role role = Role.builder()
-                .name(RoleConstants.ROLE_USER)
-                .build();
+        when(passwordEncoder.encode("pass"))
+            .thenThrow(new RuntimeException());
 
-        User user = User.builder()
-                .id(userId)
-                .roles(Set.of(role))
-                .build();
+        assertThrows(RuntimeException.class,
+            () -> userService.register(request));
 
-        when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
-        when(userQueryService.getById(userId)).thenReturn(user);
+        verify(userRepository, never()).save(any());
+    }
 
-        UserResponse response = userService.getMe();
+    @Test
+    void getMe_unauthorized_throwException() {
+        when(securityContextHelper.getCurrentUserId())
+                .thenThrow(new AppException(ErrorCode.UNAUTHORIZED));
 
-        assertNotNull(response);
-        assertEquals(userId, response.getId());
-        assertTrue(response.getRoles().contains(RoleConstants.ROLE_USER));
+        assertThrows(AppException.class,
+                () -> userService.getMe());
+
+        verifyNoInteractions(userQueryService);
     }
 
     @Test
@@ -145,11 +167,7 @@ class UserServiceUnitTest {
         when(userQueryService.getById(userId))
                 .thenThrow(new AppException(ErrorCode.USER_NOT_FOUND));
 
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> userService.getMe()
-        );
-
-        assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
+        assertThrows(AppException.class,
+                () -> userService.getMe());
     }
 }

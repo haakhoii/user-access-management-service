@@ -14,12 +14,12 @@ public class UserProfileFactory {
             UserCreatedRequest request,
             UUID userId,
             String username,
-            List<String> roles
+            String role
     ) {
         return UserProfiles.builder()
                 .userId(userId)
                 .username(username)
-                .roles(roles)
+                .role(role)
                 .fullName(request.getFullName())
                 .email(request.getEmail())
                 .phone(request.getPhone())

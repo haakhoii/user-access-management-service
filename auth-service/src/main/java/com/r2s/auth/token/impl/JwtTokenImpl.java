@@ -34,12 +34,7 @@ public class JwtTokenImpl implements JwtToken {
                     .expirationTime(Date.from(Instant.now().plus(jwtProperties.getExpiry(), ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
                     .claim("username", user.getUsername())
-                    .claim("roles",
-                            user.getRoles()
-                                    .stream()
-                                    .map(Role::getName)
-                                    .toList()
-                    )
+                    .claim("role", user.getRole().getName())
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());

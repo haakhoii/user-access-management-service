@@ -42,7 +42,7 @@ public class UserProfilesServiceImpl implements UserProfilesService {
                 request,
                 userId,
                 securityContextHelper.getCurrentUsername(),
-                securityContextHelper.getCurrentRoles()
+                securityContextHelper.getCurrentRole()
         );
         userProfileRepository.save(profile);
         log.info("User profile created successfully: {}", profile);

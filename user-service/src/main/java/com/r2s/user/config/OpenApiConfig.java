@@ -8,6 +8,12 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@SecurityScheme(
+        name = "bearerAuth",
+        type = SecuritySchemeType.HTTP,
+        scheme = "bearer",
+        bearerFormat = "JWT"
+)
 @OpenAPIDefinition(
         info = @Info(
                 title = "User Service API",
@@ -15,12 +21,6 @@ import org.springframework.context.annotation.Configuration;
                 description = "User profile management"
         ),
         security = @SecurityRequirement(name = "bearerAuth")
-)
-@SecurityScheme(
-        name = "bearerAuth",
-        type = SecuritySchemeType.HTTP,
-        scheme = "bearer",
-        bearerFormat = "JWT"
 )
 public class OpenApiConfig {
 }

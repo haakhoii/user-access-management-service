@@ -30,14 +30,8 @@ public class UserProfiles implements Serializable {
     @Column(nullable = false, unique = true, length = 100)
     String username;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(
-            name = "user_profile_roles",
-            joinColumns = @JoinColumn(name = "profile_id")
-    )
-    @Column(name = "role")
-    List<String> roles;
-
+    @Column(nullable = false, length = 50)
+    String role;
 
     @Column(name = "full_name", length = 100)
     String fullName;

@@ -13,11 +13,7 @@ public class UserMapper {
                 .valid(true)
                 .userId(user.getId())
                 .username(user.getUsername())
-                .roles(user.getRoles()
-                        .stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toSet())
-                )
+                .role(user.getRole().getName())
                 .build();
     }
 
@@ -25,11 +21,7 @@ public class UserMapper {
         return UserResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
-                .roles(user.getRoles()
-                        .stream()
-                        .map(Role::getName)
-                        .collect(Collectors.toSet())
-                )
+                .role(user.getRole().getName())
                 .build();
     }
 }

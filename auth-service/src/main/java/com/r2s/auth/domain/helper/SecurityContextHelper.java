@@ -29,22 +29,4 @@ public class SecurityContextHelper {
         return UUID.fromString(jwt.getName());
     }
 
-    public String getCurrentUsername() {
-        JwtAuthenticationToken jwt = getJwtAuthentication();
-        return jwt.getToken().getClaimAsString("username");
-    }
-
-    public List<String> getCurrentRoles() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (!(auth instanceof JwtAuthenticationToken jwt)) {
-            return List.of();
-        }
-
-        return jwt.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .toList();
-    }
-
 }

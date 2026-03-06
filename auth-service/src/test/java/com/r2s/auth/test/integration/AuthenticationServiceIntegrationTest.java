@@ -24,43 +24,37 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@SpringBootTest(
-        properties = "SPRING_PROFILES_ACTIVE=test"
-)
+@SpringBootTest(properties = "SPRING_PROFILES_ACTIVE=test")
 @ActiveProfiles("test")
 @Testcontainers
 @Transactional
 class AuthenticationServiceIntegrationTest {
+
     @Container
     static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:16-alpine")
-                    .withDatabaseName("auth_test_db")
-                    .withUsername("postgres")
-                    .withPassword("postgres");
+        new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("auth_test_db")
+            .withUsername("postgres")
+            .withPassword("postgres");
 
     @Container
     static GenericContainer<?> redis =
-            new GenericContainer<>("redis:7-alpine")
-                    .withExposedPorts(6379);
+        new GenericContainer<>("redis:7-alpine")
+            .withExposedPorts(6379);
 
     @DynamicPropertySource
     static void overrideProps(DynamicPropertyRegistry registry) {
-        // db
         registry.add("spring.datasource.url", postgres::getJdbcUrl);
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.flyway.enabled", () -> true);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
 
-        // jwt
         registry.add("jwt.signerKey", () ->
-                UUID.randomUUID().toString().repeat(4)
+            UUID.randomUUID().toString().repeat(4)
         );
-        registry.add("jwt.expiry", () -> "15");
 
-        // redis
-        registry.add("spring.data.redis.host", redis::getHost);
-        registry.add("spring.data.redis.port", () -> redis.getMappedPort(6379));
+        registry.add("jwt.expiry", () -> "15");
     }
 
     @Autowired
@@ -69,20 +63,21 @@ class AuthenticationServiceIntegrationTest {
     @Autowired
     UserService userService;
 
+    // happy case
     @Test
     void login_success() {
+
         userService.register(
-                RegisterRequest.builder()
-                        .username("auth_user")
-                        .password("password")
-                        .role("")
-                        .build()
+            RegisterRequest.builder()
+                .username("auth_user")
+                .password("password")
+                .build()
         );
 
         LoginRequest request = LoginRequest.builder()
-                .username("auth_user")
-                .password("password")
-                .build();
+            .username("auth_user")
+            .password("password")
+            .build();
 
         TokenResponse response = authenticationService.login(request);
 
@@ -91,68 +86,124 @@ class AuthenticationServiceIntegrationTest {
     }
 
     @Test
-    void login_wrongPassword_throwException() {
+    void introspect_success() {
+
         userService.register(
-                RegisterRequest.builder()
-                        .username("auth_fail")
-                        .password("password")
-                        .role("")
-                        .build()
+            RegisterRequest.builder()
+                .username("introspect_user")
+                .password("password")
+                .build()
+        );
+
+        LoginRequest login = LoginRequest.builder()
+            .username("introspect_user")
+            .password("password")
+            .build();
+
+        TokenResponse token = authenticationService.login(login);
+
+        assertThat(token.getToken()).isNotBlank();
+
+    }
+
+    // negative case
+    @Test
+    void login_usernameNotFound_throwException() {
+
+        LoginRequest request = LoginRequest.builder()
+            .username("not_exist")
+            .password("password")
+            .build();
+
+        AppException ex = assertThrows(
+            AppException.class,
+            () -> authenticationService.login(request)
+        );
+
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    void login_nullUsername_throwValidationException() {
+
+        LoginRequest request = LoginRequest.builder()
+            .username(null)
+            .password("password")
+            .build();
+
+        AppException ex = assertThrows(
+            AppException.class,
+            () -> authenticationService.login(request)
+        );
+
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    void login_wrongPassword_throwException() {
+
+        userService.register(
+            RegisterRequest.builder()
+                .username("auth_fail")
+                .password("password")
+                .build()
         );
 
         LoginRequest request = LoginRequest.builder()
-                .username("auth_fail")
-                .password("wrong-password")
-                .build();
+            .username("auth_fail")
+            .password("wrong-password")
+            .build();
 
         AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.login(request)
+            AppException.class,
+            () -> authenticationService.login(request)
         );
 
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_INVALID);
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.PASSWORD_INVALID);
+    }
+
+    @Test
+    void login_invalidRequest_throwException() {
+
+        LoginRequest request = LoginRequest.builder()
+            .username("")
+            .password("")
+            .build();
+
+        AppException ex = assertThrows(
+            AppException.class,
+            () -> authenticationService.login(request)
+        );
+
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.INVALID_REQUEST);
+    }
+
+    @Test
+    void introspect_unauthorized_throwException() {
+
+        AppException ex = assertThrows(
+            AppException.class,
+            () -> authenticationService.introspect()
+        );
+
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.UNAUTHORIZED);
     }
 
     @Test
     void introspect_userNotFound_throwException() {
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.introspect()
-        );
-
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
-    }
-
-    @Test
-    void introspect_invalidToken_throwUnauthorized() {
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.introspect()
-        );
-
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.UNAUTHORIZED);
-    }
-
-    @Test
-    void login_rateLimitExceeded_throwException() {
-        RegisterRequest registerRequest = RegisterRequest.builder()
-                .username("rate_user")
-                .password("password")
-                .build();
-
-        userService.register(registerRequest);
-
-        LoginRequest request = LoginRequest.builder()
-                .username("rate_user")
-                .password("wrong")
-                .build();
 
         AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.login(request)
+            AppException.class,
+            () -> authenticationService.introspect()
         );
 
-        assertThat(ex.getErrorCode()).isEqualTo(ErrorCode.PASSWORD_INVALID);
+        assertThat(ex.getErrorCode())
+            .isEqualTo(ErrorCode.UNAUTHORIZED);
     }
 
 }

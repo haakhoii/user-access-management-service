@@ -15,5 +15,5 @@ public class IntrospectResponse {
     boolean valid;
     UUID userId;
     String username;
-    Set<String> roles;
+    String role;
 }

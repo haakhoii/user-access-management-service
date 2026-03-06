@@ -8,7 +8,7 @@ public class UserProfilesMapper {
     public static UserProfileResponse toUserResponse(UserProfiles profile) {
         return UserProfileResponse.builder()
                 .username(profile.getUsername())
-                .role(profile.getRoles())
+                .role(profile.getRole())
                 .fullName(profile.getFullName())
                 .email(profile.getEmail())
                 .build();

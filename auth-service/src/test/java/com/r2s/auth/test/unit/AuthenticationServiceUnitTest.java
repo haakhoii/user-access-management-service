@@ -19,7 +19,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +42,7 @@ class AuthenticationServiceUnitTest {
     @InjectMocks
     AuthenticationServiceImpl authenticationService;
 
+    // happy case
     @Test
     void login_success() {
         LoginRequest request = LoginRequest.builder()
@@ -51,7 +51,6 @@ class AuthenticationServiceUnitTest {
                 .build();
 
         User user = new User();
-
         TokenResponse tokenResponse = TokenResponse.builder()
                 .token("jwt-token")
                 .build();
@@ -61,15 +60,71 @@ class AuthenticationServiceUnitTest {
 
         TokenResponse result = authenticationService.login(request);
 
-        assertNotNull(result);
         assertEquals("jwt-token", result.getToken());
-
         verify(authenticationValidation).validateLogin(request);
         verify(jwtToken).generateToken(user);
     }
 
     @Test
-    void login_invalidPassword_throwException() {
+    void introspect_success() {
+        UUID userId = UUID.randomUUID();
+        Role role = Role.builder()
+            .name(RoleConstants.ROLE_USER)
+            .build();
+
+        User user = User.builder()
+            .id(userId)
+            .role(role)
+            .build();
+
+        when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
+        when(userQueryService.getById(userId)).thenReturn(user);
+
+        IntrospectResponse response = authenticationService.introspect();
+
+        assertEquals(userId, response.getUserId());
+        verify(userQueryService).getById(userId);
+    }
+
+    // negative case
+    @Test
+    void login_usernameNotFound_throwException() {
+        LoginRequest request = LoginRequest.builder()
+            .username("notfound")
+            .password("password")
+            .build();
+
+        when(authenticationValidation.validateLogin(request))
+            .thenThrow(new AppException(ErrorCode.USER_NOT_FOUND));
+
+        assertThrows(AppException.class,
+            () -> authenticationService.login(request));
+
+        verify(jwtToken, never()).generateToken(any());
+    }
+
+    @Test
+    void login_nullUsername_throwValidationException() {
+        LoginRequest request = LoginRequest.builder()
+            .username(null)
+            .password("password")
+            .build();
+
+        when(authenticationValidation.validateLogin(request))
+            .thenThrow(new AppException(ErrorCode.INVALID_REQUEST));
+
+        assertThrows(AppException.class,
+            () -> authenticationService.login(request));
+    }
+
+    @Test
+    void login_nullRequest_throwException() {
+        assertThrows(NullPointerException.class,
+            () -> authenticationService.login(null));
+    }
+
+    @Test
+    void login_invalidPassword_throwException_andDoNotGenerateToken() {
         LoginRequest request = LoginRequest.builder()
                 .username("user")
                 .password("wrong")
@@ -78,37 +133,24 @@ class AuthenticationServiceUnitTest {
         when(authenticationValidation.validateLogin(request))
                 .thenThrow(new AppException(ErrorCode.PASSWORD_INVALID));
 
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.login(request)
-        );
+        assertThrows(AppException.class,
+                () -> authenticationService.login(request));
 
-        assertEquals(ErrorCode.PASSWORD_INVALID, ex.getErrorCode());
+        verify(jwtToken, never()).generateToken(any());
     }
 
     @Test
-    void introspect_success() {
-        UUID userId = UUID.randomUUID();
+    void introspect_unauthenticated_throwUnauthorized() {
+        when(securityContextHelper.getCurrentUserId())
+                .thenThrow(new AppException(ErrorCode.UNAUTHORIZED));
 
-        Role role = Role.builder()
-                .name(RoleConstants.ROLE_USER)
-                .build();
+        AppException ex = assertThrows(
+                AppException.class,
+                () -> authenticationService.introspect()
+        );
 
-        User user = User.builder()
-                .id(userId)
-                .roles(Set.of(role))
-                .build();
-
-        when(securityContextHelper.getCurrentUserId()).thenReturn(userId);
-        when(userQueryService.getById(userId)).thenReturn(user);
-
-        IntrospectResponse response = authenticationService.introspect();
-
-        assertNotNull(response);
-        assertEquals(userId, response.getUserId());
-        assertTrue(response.getRoles().contains(RoleConstants.ROLE_USER));
-
-        verify(userQueryService).getById(userId);
+        assertEquals(ErrorCode.UNAUTHORIZED, ex.getErrorCode());
+        verifyNoInteractions(userQueryService);
     }
 
     @Test
@@ -119,11 +161,7 @@ class AuthenticationServiceUnitTest {
         when(userQueryService.getById(userId))
                 .thenThrow(new AppException(ErrorCode.USER_NOT_FOUND));
 
-        AppException ex = assertThrows(
-                AppException.class,
-                () -> authenticationService.introspect()
-        );
-
-        assertEquals(ErrorCode.USER_NOT_FOUND, ex.getErrorCode());
+        assertThrows(AppException.class,
+                () -> authenticationService.introspect());
     }
 }

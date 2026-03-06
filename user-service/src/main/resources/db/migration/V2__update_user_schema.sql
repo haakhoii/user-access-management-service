@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS user_profile_roles;
+
+ALTER TABLE user_profiles
+ADD COLUMN role VARCHAR(50) NOT NULL DEFAULT 'ROLE_USER';
+
+ALTER TABLE user_profiles
+ALTER COLUMN role DROP DEFAULT;
