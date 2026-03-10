@@ -16,5 +16,5 @@ public interface UserProfilesService {
 
     UserProfileResponse update(UserUpdatedRequest request);
 
-    String delete(UUID id);
+    String deleteByUsername(String username);
 }

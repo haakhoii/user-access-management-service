@@ -15,8 +15,8 @@ public class UserProfileValidation {
     private final UserProfileRepository userProfileRepository;
 
     public void validateCreate(UUID userId) {
-        if (userProfileRepository.findByUserId(userId).isPresent()) {
-            throw new AppException(ErrorCode.USER_EXISTS);
+        if (userProfileRepository.existsByUserId(userId)) {
+            throw new AppException(ErrorCode.PROFILE_ALREADY_EXISTS);
         }
     }
 

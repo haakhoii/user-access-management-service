@@ -11,6 +11,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -45,6 +46,18 @@ public class UserController {
         return ApiResponse.<UserResponse>builder()
                 .result(userService.getMe())
                 .build();
+    }
+
+    @Operation(
+        summary = "Delete user",
+        description = "Admin delete user and profile"
+    )
+    @DeleteMapping("/{username}")
+    @PreAuthorize("hasRole('ADMIN')")
+    ApiResponse<String> delete(@PathVariable("username") String username) {
+        return ApiResponse.<String>builder()
+            .result(userService.deleteUser(username))
+            .build();
     }
 
 }

@@ -2,6 +2,21 @@ version: "3.8"
 name: "user-system"
 
 services:
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.29.3
+    container_name: swagger-user-system
+    ports:
+      - "8888:8080"
+    environment:
+      URLS: >
+        [
+          {"url":"http://auth-service:8081/api/v1/auth/v3/api-docs","name":"Auth Service"},
+          {"url":"http://user-service:8082/api/v1/user/v3/api-docs","name":"User Service"}
+        ]
+    depends_on:
+      - auth-service
+      - user-service
+
   postgres:
     image: postgres:15
     container_name: postgres-user-system

@@ -35,7 +35,12 @@ public class SecurityContextHelper {
 
     public String getCurrentRole() {
         JwtAuthenticationToken jwt = getJwtAuthentication();
-        return jwt.getToken().getClaimAsString("role");
-    }
+        var roles = jwt.getToken().getClaimAsStringList("role");
 
+        if (roles == null || roles.isEmpty()) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+
+        return roles.get(0);
+    }
 }

@@ -10,6 +10,7 @@ import com.r2s.auth.token.JwtToken;
 import com.r2s.core.dto.response.TokenResponse;
 import com.r2s.core.exception.AppException;
 import com.r2s.core.exception.ErrorCode;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +35,7 @@ public class JwtTokenImpl implements JwtToken {
                     .expirationTime(Date.from(Instant.now().plus(jwtProperties.getExpiry(), ChronoUnit.MINUTES)))
                     .jwtID(UUID.randomUUID().toString())
                     .claim("username", user.getUsername())
-                    .claim("role", user.getRole().getName())
+                    .claim("role", List.of(user.getRole().getName()))
                     .build();
 
             Payload payload = new Payload(claims.toJSONObject());

@@ -1,6 +1,7 @@
 package com.r2s.auth.service.impl;
 
 import com.r2s.auth.domain.helper.SecurityContextHelper;
+import com.r2s.auth.domain.httpclient.UserClient;
 import com.r2s.auth.domain.role.UserRoleAssigner;
 import com.r2s.auth.domain.validation.user.UserValidation;
 import com.r2s.auth.entity.Role;
@@ -12,6 +13,8 @@ import com.r2s.auth.service.UserQueryService;
 import com.r2s.auth.service.UserService;
 import com.r2s.core.dto.request.RegisterRequest;
 import com.r2s.core.dto.response.UserResponse;
+import com.r2s.core.exception.AppException;
+import com.r2s.core.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,6 +39,7 @@ public class UserServiceImpl implements UserService {
     UserRoleAssigner roleAssigner;
     SecurityContextHelper securityContextHelper;
     UserQueryService userQueryService;
+    UserClient userClient;
 
     @Override
     @Transactional
@@ -57,5 +61,16 @@ public class UserServiceImpl implements UserService {
         UUID userId = securityContextHelper.getCurrentUserId();
         User user = userQueryService.getById(userId);
         return UserMapper.toUserResponse(user);
+    }
+
+    @Override
+    @Transactional
+    public String deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        userClient.deleteProfile(username);
+        userRepository.delete(user);
+
+        return "User and profile deleted with username = " + username;
     }
 }

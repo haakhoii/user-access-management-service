@@ -86,16 +86,13 @@ public class UserProfilesController {
                 .build();
     }
 
-    @Operation(
-            summary = "Delete profile",
-            description = "Delete profile with user id"
-    )
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/delete-profile/{username}")
     @PreAuthorize("hasRole('ADMIN')")
-    ApiResponse<String> delete(@PathVariable("id") UUID id) {
-        log.info("Delete user profile request with userId: {}", id);
+    ApiResponse<String> deleteProfile(@PathVariable("username") String username) {
+        log.info("Delete user profile request with username: {}", username);
+
         return ApiResponse.<String>builder()
-                .result(userProfilesService.delete(id))
-                .build();
+            .result(userProfilesService.deleteByUsername(username))
+            .build();
     }
 }

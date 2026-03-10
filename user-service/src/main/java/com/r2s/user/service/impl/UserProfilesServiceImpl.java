@@ -103,10 +103,12 @@ public class UserProfilesServiceImpl implements UserProfilesService {
     }
 
     @Override
-    public String delete(UUID id) {
-        UserProfiles profile = userProfileRepository.findByUserId(id)
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    public String deleteByUsername(String username) {
+        UserProfiles profile = userProfileRepository.findByUsername(username)
+            .orElseThrow(() -> new AppException(ErrorCode.PROFILE_NOT_FOUND));
+
         userProfileRepository.delete(profile);
+
         log.info("User profile deleted successfully: {}", profile);
 
         return "User profile deleted successfully";

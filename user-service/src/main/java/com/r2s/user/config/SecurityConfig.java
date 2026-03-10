@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -53,6 +54,13 @@ public class SecurityConfig {
                         )
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 );
+        http.cors(c -> c.configurationSource(request -> {
+            CorsConfiguration corsConfiguration = new CorsConfiguration();
+            corsConfiguration.addAllowedOrigin("*");
+            corsConfiguration.addAllowedHeader("*");
+            corsConfiguration.addAllowedMethod("*");
+            return corsConfiguration;
+        }));
         return http.build();
     }
 
@@ -60,7 +68,7 @@ public class SecurityConfig {
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-        authorities.setAuthoritiesClaimName("roles");
+        authorities.setAuthoritiesClaimName("role");
         authorities.setAuthorityPrefix("");
 
         JwtAuthenticationConverter authentication = new JwtAuthenticationConverter();

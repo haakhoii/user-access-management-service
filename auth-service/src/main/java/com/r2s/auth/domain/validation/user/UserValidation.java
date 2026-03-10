@@ -9,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserValidation {
+public class
+UserValidation {
 
     private final UserRepository userRepository;
 
