@@ -25,18 +25,17 @@ public class SecurityConfig {
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final RateLimitBlockFilter rateLimitBlockFilter;
     private final MdcFilter mdcFilter;
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/register",
-            "/login",
-
-            "/swagger-ui.html",
-            "/swagger-ui/**",
-            "/v3/api-docs/**",
-
-            "/actuator/**"
+        "/register",
+        "/login",
+        "/swagger-ui.html",
+        "/swagger-ui/**",
+        "/v3/api-docs/**",
+        "/actuator/**"
     };
 
     @Bean
@@ -47,30 +46,32 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(
-                        rateLimitBlockFilter,
-                        BearerTokenAuthenticationFilter.class
+            .csrf(AbstractHttpConfigurer::disable)
+            .addFilterBefore(rateLimitBlockFilter, BearerTokenAuthenticationFilter.class)
+            .addFilterBefore(mdcFilter, RateLimitBlockFilter.class)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth -> oauth
+                .jwt(jwt -> jwt
+                    .decoder(jwtDecoder)
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
-                .addFilterBefore(mdcFilter, RateLimitBlockFilter.class)
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
-                        .anyRequest().authenticated()
-                )
-                .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder)
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                );
+            )
+            .exceptionHandling(ex -> ex
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(customAccessDeniedHandler)
+            );
+
         http.cors(c -> c.configurationSource(request -> {
-            CorsConfiguration corsConfiguration = new CorsConfiguration();
-            corsConfiguration.addAllowedOrigin("*");
-            corsConfiguration.addAllowedHeader("*");
-            corsConfiguration.addAllowedMethod("*");
-            return corsConfiguration;
+            CorsConfiguration cors = new CorsConfiguration();
+            cors.addAllowedOrigin("*");
+            cors.addAllowedHeader("*");
+            cors.addAllowedMethod("*");
+            return cors;
         }));
+
         return http.build();
     }
 
@@ -82,6 +83,7 @@ public class SecurityConfig {
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(authorities);
+
         return converter;
     }
 }
